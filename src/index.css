@@ -1,0 +1,790 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fix Tailwind base styles conflicting with Ant Design buttons */
+@layer base {
+  button, [type='button'], [type='reset'], [type='submit'] {
+    background-color: revert;
+  }
+}
+
+/* Ant Design button fixes - ensure buttons show properly */
+.ant-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ant-btn-primary {
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
+  color: white !important;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background-color: #40a9ff !important;
+  border-color: #40a9ff !important;
+  color: white !important;
+}
+
+.ant-btn-primary:active {
+  background-color: #096dd9 !important;
+  border-color: #096dd9 !important;
+}
+
+.ant-btn-primary[disabled],
+.ant-btn-primary[disabled]:hover {
+  background-color: #d9d9d9 !important;
+  border-color: #d9d9d9 !important;
+  color: rgba(0,0,0,0.25) !important;
+}
+
+/* Ghost button fix */
+.ant-btn-primary.ant-btn-background-ghost {
+  background-color: transparent !important;
+  border-color: #1890ff !important;
+  color: #1890ff !important;
+}
+
+.ant-btn-primary.ant-btn-background-ghost:hover {
+  background-color: rgba(24, 144, 255, 0.1) !important;
+  border-color: #40a9ff !important;
+  color: #40a9ff !important;
+}
+
+.ant-btn-default {
+  background-color: #fff !important;
+  border-color: #d9d9d9 !important;
+  color: rgba(0,0,0,0.88) !important;
+}
+
+.ant-btn-default:hover,
+.ant-btn-default:focus {
+  border-color: #1890ff !important;
+  color: #1890ff !important;
+}
+
+/* Text button fix */
+.ant-btn-text {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: rgba(0,0,0,0.88) !important;
+}
+
+.ant-btn-text:hover {
+  background-color: rgba(0,0,0,0.04) !important;
+  color: rgba(0,0,0,0.88) !important;
+}
+
+/* Link button fix */
+.ant-btn-link {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: #1890ff !important;
+}
+
+.ant-btn-link:hover {
+  color: #40a9ff !important;
+}
+
+/* Danger button fix */
+.ant-btn-dangerous {
+  border-color: #ff4d4f !important;
+  color: #ff4d4f !important;
+}
+
+.ant-btn-dangerous.ant-btn-primary {
+  background-color: #ff4d4f !important;
+  border-color: #ff4d4f !important;
+  color: white !important;
+}
+
+/* Badge styling fix */
+.ant-badge-count {
+  background: #ff4d4f;
+}
+
+/* Tag styling fix */
+.ant-tag {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+:root {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #213547;
+  background-color: #ffffff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Custom utilities */
+@layer utilities {
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-pink-500;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl;
+  }
+
+  .glass-dark {
+    @apply bg-gray-900/80 backdrop-blur-xl;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  .btn-gradient {
+    @apply bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25;
+  }
+
+  .section-padding {
+    @apply py-20 px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-max {
+    @apply max-w-7xl mx-auto;
+  }
+}
+
+/* Animated gradient background */
+.gradient-animate {
+  background: linear-gradient(-45deg, #667eea, #764ba2, #6B73FF, #000DFF);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Floating animation */
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+.float-animation-delayed {
+  animation: float 6s ease-in-out infinite 2s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+/* Pulse glow effect */
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.5); }
+  50% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+}
+
+/* Fade in up animation */
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero particles */
+.particles-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: particleFloat 15s infinite;
+}
+
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translateY(100vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Counter animation */
+.counter-value {
+  display: inline-block;
+}
+
+/* Portal card styles */
+.portal-card {
+  @apply relative overflow-hidden rounded-2xl p-8 transition-all duration-500;
+}
+
+.portal-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+.portal-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Feature card styles */
+.feature-card {
+  @apply bg-white rounded-2xl p-8 shadow-lg transition-all duration-300;
+}
+
+.feature-card:hover {
+  @apply shadow-2xl -translate-y-2;
+}
+
+.feature-card .icon-wrapper {
+  @apply w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300;
+}
+
+.feature-card:hover .icon-wrapper {
+  @apply scale-110;
+}
+
+/* Credential box styles */
+.credential-box {
+  @apply relative overflow-hidden;
+}
+
+.credential-box::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 60%
+  );
+  animation: shimmer 3s infinite;
+  pointer-events: none; /* Fix: Allow clicks to pass through shimmer effect */
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%); }
+  100% { transform: translateX(100%) translateY(100%); }
+}
+
+/* Dashboard preview tabs */
+.preview-tab {
+  @apply px-6 py-3 rounded-full font-medium transition-all duration-300;
+}
+
+.preview-tab.active {
+  @apply bg-white text-gray-900 shadow-lg;
+}
+
+.preview-tab:not(.active) {
+  @apply text-white/70 hover:text-white hover:bg-white/10;
+}
+
+/* Statistics counter */
+.stat-card {
+  @apply text-center p-8;
+}
+
+.stat-number {
+  @apply text-5xl font-bold mb-2 gradient-text;
+}
+
+.stat-label {
+  @apply text-gray-600 font-medium;
+}
+
+/* Testimonial card */
+.testimonial-card {
+  @apply bg-white rounded-2xl p-8 shadow-lg;
+}
+
+.testimonial-avatar {
+  @apply w-16 h-16 rounded-full object-cover border-4 border-purple-100;
+}
+
+/* Contact form */
+.form-input {
+  @apply w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all;
+}
+
+/* Footer styles */
+.footer-link {
+  @apply text-gray-400 hover:text-white transition-colors duration-300;
+}
+
+/* Responsive helpers */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .section-padding {
+    @apply py-12;
+  }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 640px) {
+  /* Ant Design Table responsive */
+  .ant-table {
+    font-size: 12px;
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 8px 6px !important;
+  }
+
+  /* Ant Design Card responsive */
+  .ant-card {
+    margin-bottom: 12px;
+  }
+
+  .ant-card-body {
+    padding: 12px !important;
+  }
+
+  /* Ant Design Form responsive */
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+
+  /* Ant Design Modal responsive */
+  .ant-modal {
+    max-width: calc(100vw - 32px) !important;
+    margin: 16px auto !important;
+  }
+
+  .ant-modal-body {
+    padding: 16px !important;
+  }
+
+  /* Ant Design Button responsive */
+  .ant-btn-lg {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  /* Stats cards responsive */
+  .ant-statistic-title {
+    font-size: 12px;
+  }
+
+  .ant-statistic-content-value {
+    font-size: 20px;
+  }
+
+  /* Mobile scrollbar hidden */
+  .mobile-hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Mobile Dashboard Cards */
+.mobile-stat-card {
+  @apply rounded-2xl p-4 relative overflow-hidden;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.mobile-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  transform: translate(30%, -30%);
+  opacity: 0.1;
+}
+
+/* Mobile Bottom Nav Safe Area */
+.mobile-bottom-safe {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+/* Mobile Content Padding for fixed header/footer */
+.mobile-content {
+  padding-top: 56px;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  min-height: 100vh;
+}
+
+/* Smooth touch scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Mobile friendly tap targets */
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile gradient buttons */
+.mobile-btn-gradient {
+  @apply font-semibold py-3 px-6 rounded-xl transition-all duration-300;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.mobile-btn-gradient:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+}
+
+/* Mobile Card Hover Effect */
+.mobile-card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-card-lift:active {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+/* Mobile Header gradient backgrounds */
+.mobile-header-consumer {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.mobile-header-retailer {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.mobile-header-wholesaler {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.mobile-header-admin {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Shimmer loading effect */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Mobile-friendly charts container */
+.chart-container-mobile {
+  @apply w-full overflow-x-auto;
+  -webkit-overflow-scrolling: touch;
+  @apply w-16 h-16 rounded-full object-cover border-4 border-purple-100;
+}
+
+/* Contact form */
+.form-input {
+  @apply w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all;
+}
+
+/* Footer styles */
+.footer-link {
+  @apply text-gray-400 hover:text-white transition-colors duration-300;
+}
+
+/* Responsive helpers */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .section-padding {
+    @apply py-12;
+  }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 640px) {
+  /* Ant Design Table responsive */
+  .ant-table {
+    font-size: 12px;
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 8px 6px !important;
+  }
+
+  /* Ant Design Card responsive */
+  .ant-card {
+    margin-bottom: 12px;
+  }
+
+  .ant-card-body {
+    padding: 12px !important;
+  }
+
+  /* Ant Design Form responsive */
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+
+  /* Ant Design Modal responsive */
+  .ant-modal {
+    max-width: calc(100vw - 32px) !important;
+    margin: 16px auto !important;
+  }
+
+  .ant-modal-body {
+    padding: 16px !important;
+  }
+
+  /* Ant Design Button responsive */
+  .ant-btn-lg {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 14px;
+  }
+
+  /* Stats cards responsive */
+  .ant-statistic-title {
+    font-size: 12px;
+  }
+
+  .ant-statistic-content-value {
+    font-size: 20px;
+  }
+
+  /* Mobile scrollbar hidden */
+  .mobile-hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Mobile Dashboard Cards */
+.mobile-stat-card {
+  @apply rounded-2xl p-4 relative overflow-hidden;
+  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.mobile-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  transform: translate(30%, -30%);
+  opacity: 0.1;
+}
+
+/* Mobile Bottom Nav Safe Area */
+.mobile-bottom-safe {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+/* Mobile Content Padding for fixed header/footer */
+.mobile-content {
+  padding-top: 56px;
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  min-height: 100vh;
+}
+
+/* Smooth touch scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Mobile friendly tap targets */
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile gradient buttons */
+.mobile-btn-gradient {
+  @apply font-semibold py-3 px-6 rounded-xl transition-all duration-300;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.mobile-btn-gradient:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+}
+
+/* Mobile Card Hover Effect */
+.mobile-card-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-card-lift:active {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+/* Mobile Header gradient backgrounds */
+.mobile-header-consumer {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.mobile-header-retailer {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.mobile-header-wholesaler {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
+.mobile-header-admin {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Shimmer loading effect */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Mobile-friendly charts container */
+.chart-container-mobile {
+  @apply w-full overflow-x-auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chart-container-mobile > div {
+  min-width: 300px;
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .ant-modal-content, .ant-modal-content * {
+    visibility: visible;
+  }
+  .ant-modal-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .ant-modal-footer, .ant-modal-close {
+    display: none !important;
+  }
+}

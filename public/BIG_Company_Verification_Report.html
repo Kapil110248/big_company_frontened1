@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>BIG Company Verification Report</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.2.0/github-markdown.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">BIG Company Verification Report</h1>
+</header>
+<h1
+id="big-company-unified-frontend---requirements-verification-report">BIG
+Company Unified Frontend - Requirements Verification Report</h1>
+<p><strong>Production URL:</strong>
+https://unified-frontend-production.up.railway.app
+<strong>Date:</strong> December 9, 2024 <strong>Version:</strong>
+1.0</p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>This report verifies the implementation of the BIG Company Unified
+Frontend against the specified requirements for both Customer Portal and
+Retailer Portal. All features have been implemented and deployed to
+production on Railway.</p>
+<hr />
+<h2 id="customer-portal-verification">CUSTOMER PORTAL VERIFICATION</h2>
+<h3 id="shop-feature">1. Shop Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Customer enters location manually (District – Sector – Cell)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Location modal with District, Sector, Cell dropdowns</td>
+</tr>
+<tr class="even">
+<td>System shows nearest shop based on location</td>
+<td>✅ IMPLEMENTED</td>
+<td>“Find Nearest Stores” button searches by location hierarchy</td>
+</tr>
+<tr class="odd">
+<td>“Change store” renamed to “explore another store”</td>
+<td>✅ IMPLEMENTED</td>
+<td>Button text updated</td>
+</tr>
+<tr class="even">
+<td>Payment options: Wallet and Mobile Money only</td>
+<td>✅ IMPLEMENTED</td>
+<td>Checkout shows Dashboard Balance, Credit Balance, MTN, Airtel
+options</td>
+</tr>
+<tr class="odd">
+<td>Dashboard wallet payment requires meter ID for rewards</td>
+<td>✅ IMPLEMENTED</td>
+<td>Meter ID field shown for gas rewards</td>
+</tr>
+<tr class="even">
+<td>Credit payment - no meter ID (no rewards on credit)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Credit payments skip meter ID step</td>
+</tr>
+<tr class="odd">
+<td>Mobile Money: MTN/Airtel with meter ID for rewards</td>
+<td>✅ IMPLEMENTED</td>
+<td>Mobile money flow includes meter ID input</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Screenshot Reference:</strong> <code>04_shop_page.png</code>
+- Shows location modal with District/Sector/Cell selection</p>
+<hr />
+<h3 id="my-orders-feature">2. My Orders Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Track orders</td>
+<td>✅ IMPLEMENTED</td>
+<td>Order status timeline visible</td>
+</tr>
+<tr class="even">
+<td>Cancel order (if not shipped) with reasons</td>
+<td>✅ IMPLEMENTED</td>
+<td>Cancel button with reason modal</td>
+</tr>
+<tr class="odd">
+<td>See cancellation reasons from retailer</td>
+<td>✅ IMPLEMENTED</td>
+<td>Cancellation reason displayed</td>
+</tr>
+<tr class="even">
+<td>Order details (packager, shipper, contact, times)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Full order details view</td>
+</tr>
+<tr class="odd">
+<td>Receipt download option</td>
+<td>✅ IMPLEMENTED</td>
+<td>Download receipt button</td>
+</tr>
+<tr class="even">
+<td>Confirm delivery</td>
+<td>✅ IMPLEMENTED</td>
+<td>Confirm delivery button</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Screenshot Reference:</strong>
+<code>05_orders_page.png</code></p>
+<hr />
+<h3 id="wallet-cards-feature">3. Wallet &amp; Cards Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Available Balance (Dashboard + Credit combined)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows “30,000 RWF” as total</td>
+</tr>
+<tr class="even">
+<td>Dashboard Balance with Top Up option</td>
+<td>✅ IMPLEMENTED</td>
+<td>“25,000 RWF” with “+ Top Up” button</td>
+</tr>
+<tr class="odd">
+<td>Credit Balance with Request Loan option</td>
+<td>✅ IMPLEMENTED</td>
+<td>“5,000 RWF” with “+ Request Loan” button</td>
+</tr>
+<tr class="even">
+<td>Request Refund option on Dashboard</td>
+<td>✅ IMPLEMENTED</td>
+<td>“Request Refund” button visible</td>
+</tr>
+<tr class="odd">
+<td>Transactions tab</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows all Dashboard &amp; Credit transactions</td>
+</tr>
+<tr class="even">
+<td>My NFC Cards (limit 3, with history)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows 2/3 cards with card details</td>
+</tr>
+<tr class="odd">
+<td>Dashboard Ledger tab</td>
+<td>✅ IMPLEMENTED</td>
+<td>Tab shows all dashboard transactions</td>
+</tr>
+<tr class="even">
+<td>Credit Ledger with full details</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows Credit Limit, Available Credit, Used Credit, Outstanding
+Balance</td>
+</tr>
+<tr class="odd">
+<td>Current Loan Date</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows “11/25/2024”</td>
+</tr>
+<tr class="even">
+<td>Next Payment Due date and amount</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows “12/15/2024 - 1,500 RWF”</td>
+</tr>
+<tr class="odd">
+<td>Payment Status</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows “CURRENT” status</td>
+</tr>
+<tr class="even">
+<td>Pay Loan button</td>
+<td>✅ IMPLEMENTED</td>
+<td>Red “Pay Loan” button visible</td>
+</tr>
+<tr class="odd">
+<td>Credit Transactions history</td>
+<td>✅ IMPLEMENTED</td>
+<td>Transaction list below credit details</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Screenshot References:</strong> -
+<code>06_wallet_overview.png</code> - Main wallet with balances -
+<code>07_wallet_nfc_cards.png</code> - NFC Cards tab -
+<code>08_wallet_dashboard_ledger.png</code> - Dashboard Ledger -
+<code>09_wallet_credit_ledger.png</code> - Credit Ledger with loan
+details</p>
+<hr />
+<h3 id="gas-top-up-feature">4. Gas Top-up Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Wallet balance = Dashboard balance</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows “Dashboard Balance: 25,000 RWF”</td>
+</tr>
+<tr class="even">
+<td>Add Meter (manual ID + nickname)</td>
+<td>✅ IMPLEMENTED</td>
+<td>“+ Add Meter” button</td>
+</tr>
+<tr class="odd">
+<td>System auto-fills owner info from API</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows owner name, ID number, phone number</td>
+</tr>
+<tr class="even">
+<td>Buy Gas (minimum 300 RWF)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Minimum amount enforced</td>
+</tr>
+<tr class="odd">
+<td>Payment: Wallet or Mobile Money (MTN/Airtel)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment options available</td>
+</tr>
+<tr class="even">
+<td>My Gas Meters with full meter info</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows meter cards with nickname, ID, owner details</td>
+</tr>
+<tr class="odd">
+<td>Recent Top-ups history</td>
+<td>✅ IMPLEMENTED</td>
+<td>Table with Date, Meter, Amount, Units, Payment Method</td>
+</tr>
+<tr class="even">
+<td>Gas Usage history option</td>
+<td>✅ IMPLEMENTED</td>
+<td>“Usage” button on each meter card</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Screenshot Reference:</strong> <code>10_gas_topup.png</code>
+- Shows gas meters with owner info, buy gas, usage history</p>
+<hr />
+<h3 id="rewards-feature">5. Rewards Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Remove redeem, current tier, ranking</td>
+<td>✅ IMPLEMENTED</td>
+<td>Only Overview and History tabs remain</td>
+</tr>
+<tr class="even">
+<td>“Shop and get free gas”</td>
+<td>✅ IMPLEMENTED</td>
+<td>First item: “Earn gas rewards as you shop with BIG stores”</td>
+</tr>
+<tr class="odd">
+<td>“Share your gas rewards with friends”</td>
+<td>✅ IMPLEMENTED</td>
+<td>Second item with meter ID sharing description</td>
+</tr>
+<tr class="even">
+<td>“Share your experience with friends”</td>
+<td>✅ IMPLEMENTED</td>
+<td>Third item: “Inform friends and family”</td>
+</tr>
+<tr class="odd">
+<td>“Invite friends” with app link</td>
+<td>✅ IMPLEMENTED</td>
+<td>Fourth item: “Copy the link and share”</td>
+</tr>
+<tr class="even">
+<td>History shows: Date, Meter ID, Order amount, Gas M³, Order ID</td>
+<td>✅ IMPLEMENTED</td>
+<td>History tab with full details</td>
+</tr>
+<tr class="odd">
+<td>Gas rewards in M³ (cubic meters)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows “25.00 M³” as available rewards</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Screenshot Reference:</strong>
+<code>11_rewards_overview.png</code> - Clean rewards page with correct
+items</p>
+<hr />
+<h3 id="profile-feature">6. Profile Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Total orders (online + physical)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Total orders count displayed</td>
+</tr>
+<tr class="even">
+<td>Wallet balance = Available balance</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows combined balance</td>
+</tr>
+<tr class="odd">
+<td>Loyalty points changed to Gas Rewards (M³)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shows gas rewards in cubic meters</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Screenshot Reference:</strong>
+<code>13_profile_page.png</code></p>
+<hr />
+<h2 id="retailer-portal-verification">RETAILER PORTAL VERIFICATION</h2>
+<h3 id="dashboard-feature">1. Dashboard Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Today’s Orders stat</td>
+<td>✅ IMPLEMENTED</td>
+<td>Order count displayed</td>
+</tr>
+<tr class="even">
+<td>Total Revenue (Capital + Profit combined)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Combined revenue shown</td>
+</tr>
+<tr class="odd">
+<td>Capital Wallet (inventory value at wholesaler price)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Separate Capital Wallet card</td>
+</tr>
+<tr class="even">
+<td>Profit Wallet (profit margin from sales)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Separate Profit Wallet card</td>
+</tr>
+<tr class="odd">
+<td>Dashboard Wallet Revenue breakdown</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment method stats</td>
+</tr>
+<tr class="even">
+<td>Credit Wallet Revenue breakdown</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment method stats</td>
+</tr>
+<tr class="odd">
+<td>Mobile Money Revenue breakdown</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment method stats</td>
+</tr>
+<tr class="even">
+<td>Gas Rewards Given (M³ and RWF)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Rewards tracking stat</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Code Reference:</strong>
+<code>src/pages/retailer/RetailerDashboard.tsx:72-93</code></p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> DashboardStats {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  capitalWallet<span class="op">:</span> <span class="dt">number</span><span class="op">;</span> <span class="co">// Inventory value at wholesaler price</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  profitWallet<span class="op">:</span> <span class="dt">number</span><span class="op">;</span> <span class="co">// Profit margin from sales</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  dashboardWalletRevenue<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  creditWalletRevenue<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  mobileMoneyRevenue<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  gasRewardsGiven<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span> <span class="co">// in M³</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  gasRewardsValue<span class="op">?:</span> <span class="dt">number</span><span class="op">;</span> <span class="co">// in RWF</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h3 id="pos-feature">2. POS Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Total Sales display</td>
+<td>✅ IMPLEMENTED</td>
+<td>Sales amount shown</td>
+</tr>
+<tr class="even">
+<td>Mobile Payment transactions total</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment breakdown</td>
+</tr>
+<tr class="odd">
+<td>Dashboard Wallet transactions total</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment breakdown</td>
+</tr>
+<tr class="even">
+<td>Credit Wallet transactions total</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment breakdown</td>
+</tr>
+<tr class="odd">
+<td>Gas Rewards amount (M³ + RWF)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Rewards given stat</td>
+</tr>
+<tr class="even">
+<td>Total = Subtotal + Tax</td>
+<td>✅ IMPLEMENTED</td>
+<td>Tax calculation included</td>
+</tr>
+<tr class="odd">
+<td>Big Shop Card payment option</td>
+<td>✅ IMPLEMENTED</td>
+<td>NFC card payment flow</td>
+</tr>
+<tr class="even">
+<td>Mobile Money payment option</td>
+<td>✅ IMPLEMENTED</td>
+<td>MTN/Airtel selection</td>
+</tr>
+<tr class="odd">
+<td>Dashboard wallet requires meter ID</td>
+<td>✅ IMPLEMENTED</td>
+<td>Meter ID for rewards</td>
+</tr>
+<tr class="even">
+<td>Credit wallet - no meter ID</td>
+<td>✅ IMPLEMENTED</td>
+<td>Credit skips rewards</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Code Reference:</strong>
+<code>src/pages/retailer/POSPage.tsx</code></p>
+<hr />
+<h3 id="add-stock-feature-new">3. Add Stock Feature (NEW)</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>View wholesaler stock in real-time</td>
+<td>✅ IMPLEMENTED</td>
+<td>Product list with stock availability</td>
+</tr>
+<tr class="even">
+<td>Order from assigned wholesaler only</td>
+<td>✅ IMPLEMENTED</td>
+<td>Single wholesaler view</td>
+</tr>
+<tr class="odd">
+<td>Pay with Capital Wallet only</td>
+<td>✅ IMPLEMENTED</td>
+<td>Capital wallet payment required</td>
+</tr>
+<tr class="even">
+<td>Product info: category, cost price, selling price, quantity</td>
+<td>✅ IMPLEMENTED</td>
+<td>Full product details in table</td>
+</tr>
+<tr class="odd">
+<td>Order confirmation updates inventory</td>
+<td>✅ IMPLEMENTED</td>
+<td>Auto-sync on order confirm</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Code Reference:</strong>
+<code>src/pages/retailer/AddStockPage.tsx:40-48</code></p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">interface</span> WholesalerProduct {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  id<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  name<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  category<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  wholesaler_price<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  stock_available<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  min_order<span class="op">:</span> <span class="dt">number</span><span class="op">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  unit<span class="op">:</span> <span class="dt">string</span><span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h3 id="inventory-feature">4. Inventory Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Add product by invoice number only</td>
+<td>✅ IMPLEMENTED</td>
+<td>Invoice input updates stock</td>
+</tr>
+<tr class="even">
+<td>Actions column removed for retailers</td>
+<td>✅ IMPLEMENTED</td>
+<td>No edit actions visible</td>
+</tr>
+<tr class="odd">
+<td>Admin-only selling price control</td>
+<td>✅ IMPLEMENTED</td>
+<td>Price editing restricted</td>
+</tr>
+<tr class="even">
+<td>Auto-update from wholesaler orders</td>
+<td>✅ IMPLEMENTED</td>
+<td>Inventory syncs with orders</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Code Reference:</strong>
+<code>src/pages/retailer/InventoryPage.tsx</code></p>
+<hr />
+<h3 id="orders-feature">5. Orders Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Total Revenue from online orders</td>
+<td>✅ IMPLEMENTED</td>
+<td>Revenue stat card</td>
+</tr>
+<tr class="even">
+<td>Dashboard Wallet Revenue</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment breakdown</td>
+</tr>
+<tr class="odd">
+<td>Credit Wallet Revenue</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment breakdown</td>
+</tr>
+<tr class="even">
+<td>Mobile Money Revenue</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment breakdown</td>
+</tr>
+<tr class="odd">
+<td>Gas Rewards given (M³ + RWF)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Rewards stat</td>
+</tr>
+<tr class="even">
+<td>Filter by payment type</td>
+<td>✅ IMPLEMENTED</td>
+<td>Payment filter dropdown</td>
+</tr>
+<tr class="odd">
+<td>Order status counts (pending, processing, ready, completed,
+cancelled)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Status filter tabs</td>
+</tr>
+<tr class="even">
+<td>Package info input</td>
+<td>✅ IMPLEMENTED</td>
+<td>Packaging details form</td>
+</tr>
+<tr class="odd">
+<td>Shipper info input</td>
+<td>✅ IMPLEMENTED</td>
+<td>Shipping details form</td>
+</tr>
+<tr class="even">
+<td>Auto-confirm delivery after 24h</td>
+<td>✅ IMPLEMENTED</td>
+<td>System auto-confirmation</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Code Reference:</strong>
+<code>src/pages/retailer/OrdersPage.tsx</code></p>
+<hr />
+<h3 id="wallet-and-credit-feature">6. Wallet and Credit Feature</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Capital Wallet dashboard</td>
+<td>✅ IMPLEMENTED</td>
+<td>Separate capital wallet view</td>
+</tr>
+<tr class="even">
+<td>Profit Wallet dashboard</td>
+<td>✅ IMPLEMENTED</td>
+<td>Separate profit wallet view</td>
+</tr>
+<tr class="odd">
+<td>Add Capital option</td>
+<td>✅ IMPLEMENTED</td>
+<td>Button to increase capital</td>
+</tr>
+<tr class="even">
+<td>Profit Wallet - admin transfers only</td>
+<td>✅ IMPLEMENTED</td>
+<td>No retailer withdrawal option</td>
+</tr>
+<tr class="odd">
+<td>Transaction history with invoices</td>
+<td>✅ IMPLEMENTED</td>
+<td>View invoice option on transactions</td>
+</tr>
+<tr class="even">
+<td>Credit dashboard (same format as customer)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Credit limit, available, used, outstanding</td>
+</tr>
+<tr class="odd">
+<td>Request Loan option</td>
+<td>✅ IMPLEMENTED</td>
+<td>Loan request form</td>
+</tr>
+<tr class="even">
+<td>Wholesaler orders paid by credit history</td>
+<td>✅ IMPLEMENTED</td>
+<td>Credit transaction list</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Code Reference:</strong>
+<code>src/pages/retailer/WalletPage.tsx</code></p>
+<hr />
+<h3 id="my-management-feature-new">7. My Management Feature (NEW)</h3>
+<table>
+<colgroup>
+<col style="width: 41%" />
+<col style="width: 25%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Check customer wallet balance (PIN required)</td>
+<td>✅ IMPLEMENTED</td>
+<td>Balance check form with PIN input</td>
+</tr>
+<tr class="even">
+<td>Card Transactions tab</td>
+<td>✅ IMPLEMENTED</td>
+<td>All card orders listed</td>
+</tr>
+<tr class="odd">
+<td>Dashboard balance orders</td>
+<td>✅ IMPLEMENTED</td>
+<td>Filter by payment type</td>
+</tr>
+<tr class="even">
+<td>Credit balance orders</td>
+<td>✅ IMPLEMENTED</td>
+<td>Filter by payment type</td>
+</tr>
+<tr class="odd">
+<td>Invoice view option</td>
+<td>✅ IMPLEMENTED</td>
+<td>View invoice button</td>
+</tr>
+<tr class="even">
+<td>Gas Rewards tab</td>
+<td>✅ IMPLEMENTED</td>
+<td>All meter IDs with rewards</td>
+</tr>
+<tr class="odd">
+<td>Profit Invoices tab</td>
+<td>✅ IMPLEMENTED</td>
+<td>Admin invoices with details</td>
+</tr>
+<tr class="even">
+<td>NFC, Employees, Vendors removed</td>
+<td>✅ IMPLEMENTED</td>
+<td>Only required tabs present</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Code Reference:</strong>
+<code>src/pages/retailer/ManagementPage.tsx:74-80</code></p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode typescript"><code class="sourceCode typescript"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> ManagementPage<span class="op">:</span> React<span class="op">.</span><span class="at">FC</span> <span class="op">=</span> () <span class="kw">=&gt;</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">const</span> [activeTab<span class="op">,</span> setActiveTab] <span class="op">=</span> <span class="fu">useState</span>(<span class="st">&#39;balance-check&#39;</span>)<span class="op">;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Tabs: balance-check, card-transactions, gas-rewards, profit-invoices</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="navigation-updates">Navigation Updates</h2>
+<table>
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 30%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Change</th>
+<th>Status</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Retailer: Add Stock page added</td>
+<td>✅ IMPLEMENTED</td>
+<td><code>/retailer/add-stock</code> route</td>
+</tr>
+<tr class="even">
+<td>Retailer: My Management page added</td>
+<td>✅ IMPLEMENTED</td>
+<td><code>/retailer/management</code> route</td>
+</tr>
+<tr class="odd">
+<td>Retailer: NFC removed</td>
+<td>✅ IMPLEMENTED</td>
+<td>Route removed</td>
+</tr>
+<tr class="even">
+<td>Retailer: Employees removed</td>
+<td>✅ IMPLEMENTED</td>
+<td>Route removed</td>
+</tr>
+<tr class="odd">
+<td>Retailer: Vendors removed</td>
+<td>✅ IMPLEMENTED</td>
+<td>Route removed</td>
+</tr>
+<tr class="even">
+<td>Mobile: Rewards replaced by My Orders</td>
+<td>✅ IMPLEMENTED</td>
+<td>Bottom nav updated</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Code Reference:</strong> <code>src/App.tsx</code> - Routes
+configuration</p>
+<hr />
+<h2 id="deployment-information">Deployment Information</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Frontend URL</td>
+<td>https://unified-frontend-production.up.railway.app</td>
+</tr>
+<tr class="even">
+<td>Platform</td>
+<td>Railway</td>
+</tr>
+<tr class="odd">
+<td>Build Status</td>
+<td>✅ Successful</td>
+</tr>
+<tr class="even">
+<td>Deployment Date</td>
+<td>December 9, 2024</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="screenshots-captured">Screenshots Captured</h2>
+<h3 id="customer-portal">Customer Portal</h3>
+<ol type="1">
+<li><code>01_login_page.png</code> - Login page</li>
+<li><code>04_shop_page.png</code> - Shop with location modal</li>
+<li><code>05_orders_page.png</code> - Orders page</li>
+<li><code>06_wallet_overview.png</code> - Wallet overview with
+balances</li>
+<li><code>07_wallet_nfc_cards.png</code> - NFC Cards tab</li>
+<li><code>08_wallet_dashboard_ledger.png</code> - Dashboard Ledger</li>
+<li><code>09_wallet_credit_ledger.png</code> - Credit Ledger with loan
+details</li>
+<li><code>10_gas_topup.png</code> - Gas top-up page</li>
+<li><code>11_rewards_overview.png</code> - Rewards overview</li>
+<li><code>12_rewards_history.png</code> - Rewards history</li>
+<li><code>13_profile_page.png</code> - Profile page</li>
+</ol>
+<h3 id="retailer-portal-code-verified">Retailer Portal (Code
+Verified)</h3>
+<ul>
+<li><code>RetailerDashboard.tsx</code> - Dashboard with Capital/Profit
+Wallets</li>
+<li><code>AddStockPage.tsx</code> - Add Stock from wholesaler</li>
+<li><code>ManagementPage.tsx</code> - My Management with all tabs</li>
+<li><code>POSPage.tsx</code> - POS with payment methods</li>
+<li><code>InventoryPage.tsx</code> - Inventory management</li>
+<li><code>OrdersPage.tsx</code> - Order management</li>
+<li><code>WalletPage.tsx</code> - Wallet and Credit management</li>
+</ul>
+<hr />
+<h2 id="conclusion">Conclusion</h2>
+<p><strong>All requirements have been successfully implemented and
+deployed to production.</strong></p>
+<p>The BIG Company Unified Frontend now includes: - Complete Customer
+Portal with Shop, Orders, Wallet &amp; Cards, Gas Top-up, Rewards, and
+Profile - Complete Retailer Portal with Dashboard (Capital/Profit
+Wallets), POS, Add Stock, Inventory, Orders, Wallet/Credit, and My
+Management - Responsive design for both desktop and mobile - Full
+authentication and role-based access</p>
+<p><strong>Production URL:</strong>
+https://unified-frontend-production.up.railway.app</p>
+<hr />
+<p><em>Report generated on December 9, 2024</em></p>
+</body>
+</html>
