@@ -153,7 +153,7 @@ export const DEFAULT_CONFIG = {
 // FRONTEND URL (for sharing/referral links)
 // ========================================
 export const FRONTEND_URL = IS_PRODUCTION
-  ? "https://bigcompanybackend-production.up.railway.app"
+  ? "https://unified-frontend-production.up.railway.app"
   : "http://localhost:3062";
 
 export default {
