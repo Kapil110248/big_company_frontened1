@@ -6,15 +6,15 @@
  * यहाँ से सभी API endpoints control होते हैं।
  * बस API_BASE_URL change करें और सभी APIs update हो जाएंगी।
  * 
- * Production: https://big-company-production.up.railway.app
- * Development: http://localhost:9005
+//  * Production: https://bigcompanybackend-production.up.railway.app
+//  * Development: http://localhost:9005
  */
 
 // ========================================
 // MAIN API URL - यहाँ change करें
 // ========================================
-// export const API_URL = "https://big-company-production.up.railway.app";
-export const API_URL = "http://localhost:9001";
+export const API_URL = "https://bigcompanybackend-production.up.railway.app";
+// export const API_URL = "http://localhost:9001";
 
 // ========================================
 // ENVIRONMENT CHECK
@@ -153,8 +153,8 @@ export const DEFAULT_CONFIG = {
 // FRONTEND URL (for sharing/referral links)
 // ========================================
 export const FRONTEND_URL = IS_PRODUCTION
-  ? "https://unified-frontend-production.up.railway.app"
-  : "http://localhost:3062"; 
+  ? "https://bigcompanybackend-production.up.railway.app"
+  : "http://localhost:3062";
 
 export default {
   API_URL,

@@ -88,6 +88,7 @@ const GasMeterRechargePage: React.FC = () => {
     const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'mobile_money' | 'nfc_card'>('wallet');
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const [customAmount, setCustomAmount] = useState<string>('');
+    const [pipingMode, setPipingMode] = useState<'ORDINARY' | 'TOKEN_PUSH'>('ORDINARY');
 
     useEffect(() => {
         loadInitialData();
@@ -174,6 +175,8 @@ const GasMeterRechargePage: React.FC = () => {
                 paymentMethod,
                 phone: values.phone,
                 cardId: values.cardId,
+                token: values.pipingToken,
+                provider: 'piping',
             });
 
             if (response.data.success) {
@@ -528,6 +531,30 @@ const GasMeterRechargePage: React.FC = () => {
                                     </Radio.Group>
                                 </Form.Item>
 
+                                {/* Piping Recharge Mode (Only for Piping) */}
+                                {meterType === 'PIPING' && (
+                                    <Form.Item label={<Text strong>Piping Recharge Mode</Text>}>
+                                        <Radio.Group 
+                                            value={pipingMode} 
+                                            onChange={(e) => setPipingMode(e.target.value)}
+                                            style={{ width: '100%' }}
+                                        >
+                                            <Row gutter={12}>
+                                                <Col span={12}>
+                                                    <Radio.Button value="ORDINARY" style={{ width: '100%', textAlign: 'center' }}>
+                                                        Ordinary Top-up
+                                                    </Radio.Button>
+                                                </Col>
+                                                <Col span={12}>
+                                                    <Radio.Button value="TOKEN_PUSH" style={{ width: '100%', textAlign: 'center' }}>
+                                                        Push Token
+                                                    </Radio.Button>
+                                                </Col>
+                                            </Row>
+                                        </Radio.Group>
+                                    </Form.Item>
+                                )}
+
                                 {/* Meter Number */}
                                 <Form.Item
                                     name="meterNumber"
@@ -545,8 +572,9 @@ const GasMeterRechargePage: React.FC = () => {
                                     />
                                 </Form.Item>
 
-                                {/* Amount Selection */}
-                                <Form.Item label={<Text strong>Recharge Amount (RWF)</Text>}>
+                                {/* Amount Selection (Only if not token push for piping) */}
+                                {!(meterType === 'PIPING' && pipingMode === 'TOKEN_PUSH') && (
+                                    <Form.Item label={<Text strong>Recharge Amount (RWF)</Text>}>
                                     <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
                                         {PREDEFINED_AMOUNTS.map((amt) => (
                                             <Col span={8} key={amt}>
@@ -592,6 +620,23 @@ const GasMeterRechargePage: React.FC = () => {
                                         min={500}
                                     />
                                 </Form.Item>
+                                )}
+
+                                {/* Piping Token Input */}
+                                {meterType === 'PIPING' && pipingMode === 'TOKEN_PUSH' && (
+                                    <Form.Item
+                                        name="pipingToken"
+                                        label={<Text strong>STS Token (20 digits)</Text>}
+                                        rules={[{ required: true, message: 'Please enter the 20-digit token.' }]}
+                                    >
+                                        <Input
+                                            prefix={<KeyOutlined style={{ color: '#ff6b35' }} />}
+                                            placeholder="Enter 20-digit token to push"
+                                            size="large"
+                                            style={{ borderRadius: 8 }}
+                                        />
+                                    </Form.Item>
+                                )}
 
                                 <Divider style={{ margin: '16px 0' }} />
 

@@ -685,6 +685,8 @@ export const gasMeterRechargeApi = {
     paymentMethod: 'wallet' | 'mobile_money' | 'nfc_card';
     phone?: string;
     cardId?: number;
+    token?: string;
+    provider?: string;
   }) => api.post('/gas-recharge/initiate', data),
 
   // Get recharge history for the current user
