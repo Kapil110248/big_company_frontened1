@@ -150,13 +150,14 @@ const GasMeterRechargePage: React.FC = () => {
 
     const handleSubmit = async (values: any) => {
         const amount = getEffectiveAmount();
+        const isPushToken = meterType === 'PIPING' && pipingMode === 'TOKEN_PUSH';
 
-        if (amount < 500) {
+        if (!isPushToken && amount < 500) {
             message.error('Minimum recharge amount is 500 RWF.');
             return;
         }
 
-        if (paymentMethod === 'wallet' && walletBalance < amount) {
+        if (!isPushToken && paymentMethod === 'wallet' && walletBalance < amount) {
             message.error(`Insufficient wallet balance. Available: ${walletBalance.toLocaleString()} RWF`);
             return;
         }
