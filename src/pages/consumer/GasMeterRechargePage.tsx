@@ -144,6 +144,47 @@ const GasMeterRechargePage: React.FC = () => {
         }
     };
 
+    const rechargePipingMeter = async (meterNumber: string, amount: number) => {
+        try {
+            const baseUrl = 'http://english.energyy.ucskype.com';
+            const apiToken = localStorage.getItem("apiToken");
+
+            if (!apiToken) {
+                return { status: "FAILED", message: "API Token details not found in localStorage" };
+            }
+
+            const body = new URLSearchParams();
+            body.append("requestParams", JSON.stringify({
+                action: "zlMeter",
+                method: "remotelyTopUp",
+                apiToken: apiToken,
+                param: {
+                    nbonetNetImei: meterNumber,
+                    amount: amount
+                }
+            }));
+
+            const response = await fetch(`${baseUrl}/api/commonInternal.jsp`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: body
+            });
+
+            const data = await response.json();
+
+            if (data && (data.success || data.errcode === "0" || data.errcode === 0)) {
+                return { status: "SUCCESS" };
+            } else {
+                return { status: "FAILED", message: data.msg || data.errmsg || 'API Rejection' };
+            }
+
+        } catch (err: any) {
+            return { status: "FAILED", message: err.message || "Network Error" };
+        }
+    };
+
     const getEffectiveAmount = (): number => {
         return selectedAmount ?? (Number(customAmount) || 0);
     };
@@ -169,6 +210,25 @@ const GasMeterRechargePage: React.FC = () => {
 
         setProcessing(true);
         try {
+            if (meterType === 'PIPING') {
+                const res = await rechargePipingMeter(values.meterNumber.trim(), amount);
+                if (res.status === 'SUCCESS') {
+                    message.success('Auto-credited');
+                    setCurrentStep(1);
+                    setResult({
+                        transactionId: Date.now(),
+                        meterNumber: values.meterNumber.trim(),
+                        meterType: 'PIPING',
+                        amount: amount,
+                        message: "Auto-credited"
+                    });
+                } else {
+                    message.error(`Recharge Failed: ${res.message}`);
+                }
+                setProcessing(false);
+                return; 
+            }
+
             const response = await gasMeterRechargeApi.initiate({
                 meterNumber: values.meterNumber.trim(),
                 meterType,
@@ -535,8 +595,8 @@ const GasMeterRechargePage: React.FC = () => {
                                 {/* Piping Recharge Mode (Only for Piping) */}
                                 {meterType === 'PIPING' && (
                                     <Form.Item label={<Text strong>Piping Recharge Mode</Text>}>
-                                        <Radio.Group 
-                                            value={pipingMode} 
+                                        <Radio.Group
+                                            value={pipingMode}
                                             onChange={(e) => setPipingMode(e.target.value)}
                                             style={{ width: '100%' }}
                                         >
@@ -576,51 +636,51 @@ const GasMeterRechargePage: React.FC = () => {
                                 {/* Amount Selection (Only if not token push for piping) */}
                                 {!(meterType === 'PIPING' && pipingMode === 'TOKEN_PUSH') && (
                                     <Form.Item label={<Text strong>Recharge Amount (RWF)</Text>}>
-                                    <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
-                                        {PREDEFINED_AMOUNTS.map((amt) => (
-                                            <Col span={8} key={amt}>
-                                                <div
-                                                    onClick={() => {
-                                                        setSelectedAmount(amt);
-                                                        setCustomAmount('');
-                                                    }}
-                                                    style={{
-                                                        border: `2px solid ${selectedAmount === amt ? '#ff6b35' : '#e8e8e8'}`,
-                                                        borderRadius: 8,
-                                                        padding: '10px 4px',
-                                                        cursor: 'pointer',
-                                                        textAlign: 'center',
-                                                        background: selectedAmount === amt ? '#fff7f0' : '#fff',
-                                                        transition: 'all 0.2s',
-                                                    }}
-                                                >
-                                                    <Text
-                                                        strong
+                                        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+                                            {PREDEFINED_AMOUNTS.map((amt) => (
+                                                <Col span={8} key={amt}>
+                                                    <div
+                                                        onClick={() => {
+                                                            setSelectedAmount(amt);
+                                                            setCustomAmount('');
+                                                        }}
                                                         style={{
-                                                            color: selectedAmount === amt ? '#ff6b35' : '#333',
-                                                            fontSize: 13,
+                                                            border: `2px solid ${selectedAmount === amt ? '#ff6b35' : '#e8e8e8'}`,
+                                                            borderRadius: 8,
+                                                            padding: '10px 4px',
+                                                            cursor: 'pointer',
+                                                            textAlign: 'center',
+                                                            background: selectedAmount === amt ? '#fff7f0' : '#fff',
+                                                            transition: 'all 0.2s',
                                                         }}
                                                     >
-                                                        {amt.toLocaleString()}
-                                                    </Text>
-                                                </div>
-                                            </Col>
-                                        ))}
-                                    </Row>
-                                    <Input
-                                        prefix="RWF"
-                                        placeholder="Or enter custom amount (min 500)"
-                                        value={customAmount}
-                                        size="large"
-                                        style={{ borderRadius: 8 }}
-                                        onChange={(e) => {
-                                            setCustomAmount(e.target.value);
-                                            setSelectedAmount(null);
-                                        }}
-                                        type="number"
-                                        min={500}
-                                    />
-                                </Form.Item>
+                                                        <Text
+                                                            strong
+                                                            style={{
+                                                                color: selectedAmount === amt ? '#ff6b35' : '#333',
+                                                                fontSize: 13,
+                                                            }}
+                                                        >
+                                                            {amt.toLocaleString()}
+                                                        </Text>
+                                                    </div>
+                                                </Col>
+                                            ))}
+                                        </Row>
+                                        <Input
+                                            prefix="RWF"
+                                            placeholder="Or enter custom amount (min 500)"
+                                            value={customAmount}
+                                            size="large"
+                                            style={{ borderRadius: 8 }}
+                                            onChange={(e) => {
+                                                setCustomAmount(e.target.value);
+                                                setSelectedAmount(null);
+                                            }}
+                                            type="number"
+                                            min={500}
+                                        />
+                                    </Form.Item>
                                 )}
 
                                 {/* Piping Token Input */}
