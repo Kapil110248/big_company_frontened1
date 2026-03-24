@@ -154,7 +154,8 @@ const GasMeterRechargePage: React.FC = () => {
         const amount = getEffectiveAmount();
         const isPushToken = meterType === 'GPRS' && !!values.pipingToken;
 
-        const cost = amount * 850;
+        // Zero cost when pushing an existing token
+        const cost = isPushToken ? 0 : amount * 850;
 
         if (!isPushToken && amount < 1) {
             message.error('Minimum recharge volume is 1 m³.');
