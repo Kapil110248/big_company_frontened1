@@ -17,7 +17,7 @@ export const API_URL = "https://bigcompanybackend-production.up.railway.app";
 // export const API_URL = "http://localhost:9001";
 
 // ========================================
-// ENVIRONMENT CHECK
+// ENVIRONMENT CHECK  
 // ========================================
 export const IS_PRODUCTION = API_URL.includes("railway.app");
 export const IS_DEVELOPMENT = !IS_PRODUCTION;

@@ -65,7 +65,7 @@ interface RechargeTransaction {
     created_at: string;
 }
 
-const PREDEFINED_AMOUNTS = [500, 1000, 2000, 5000, 10000, 20000];
+const PREDEFINED_AMOUNTS = [5, 10, 20, 50, 100, 200];
 
 const GasMeterRechargePage: React.FC = () => {
     const [form] = Form.useForm();
@@ -84,7 +84,7 @@ const GasMeterRechargePage: React.FC = () => {
     const [metersLoading, setMetersLoading] = useState(false);
 
     // Form values
-    const [meterType, setMeterType] = useState<'TOKEN' | 'PIPING'>('TOKEN');
+    const [meterType, setMeterType] = useState<'LORA_NB' | 'GPRS'>('LORA_NB');
     const [paymentMethod, setPaymentMethod] = useState<'wallet' | 'mobile_money' | 'nfc_card'>('wallet');
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const [customAmount, setCustomAmount] = useState<string>('');
@@ -144,46 +144,7 @@ const GasMeterRechargePage: React.FC = () => {
         }
     };
 
-    const rechargePipingMeter = async (meterNumber: string, amount: number) => {
-        try {
-            const baseUrl = 'http://english.energyy.ucskype.com';
-            const apiToken = localStorage.getItem("apiToken");
-
-            if (!apiToken) {
-                return { status: "FAILED", message: "API Token details not found in localStorage" };
-            }
-
-            const body = new URLSearchParams();
-            body.append("requestParams", JSON.stringify({
-                action: "zlMeter",
-                method: "remotelyTopUp",
-                apiToken: apiToken,
-                param: {
-                    nbonetNetImei: meterNumber,
-                    amount: amount
-                }
-            }));
-
-            const response = await fetch(`${baseUrl}/api/commonInternal.jsp`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: body
-            });
-
-            const data = await response.json();
-
-            if (data && (data.success || data.errcode === "0" || data.errcode === 0)) {
-                return { status: "SUCCESS" };
-            } else {
-                return { status: "FAILED", message: data.msg || data.errmsg || 'API Rejection' };
-            }
-
-        } catch (err: any) {
-            return { status: "FAILED", message: err.message || "Network Error" };
-        }
-    };
+    // LoRaWAN-based recharge function removed per requirement to completely disable LoRaWAN recharge logic from frontend.
 
     const getEffectiveAmount = (): number => {
         return selectedAmount ?? (Number(customAmount) || 0);
@@ -191,15 +152,17 @@ const GasMeterRechargePage: React.FC = () => {
 
     const handleSubmit = async (values: any) => {
         const amount = getEffectiveAmount();
-        const isPushToken = meterType === 'PIPING' && pipingMode === 'TOKEN_PUSH';
+        const isPushToken = meterType === 'GPRS' && !!values.pipingToken;
 
-        if (!isPushToken && amount < 500) {
-            message.error('Minimum recharge amount is 500 RWF.');
+        const cost = amount * 850;
+
+        if (!isPushToken && amount < 1) {
+            message.error('Minimum recharge volume is 1 m³.');
             return;
         }
 
-        if (!isPushToken && paymentMethod === 'wallet' && walletBalance < amount) {
-            message.error(`Insufficient wallet balance. Available: ${walletBalance.toLocaleString()} RWF`);
+        if (!isPushToken && paymentMethod === 'wallet' && walletBalance < cost) {
+            message.error(`Insufficient wallet balance. Available: ${walletBalance.toLocaleString()} RWF. Required: ${cost.toLocaleString()} RWF`);
             return;
         }
 
@@ -210,28 +173,11 @@ const GasMeterRechargePage: React.FC = () => {
 
         setProcessing(true);
         try {
-            if (meterType === 'PIPING') {
-                const res = await rechargePipingMeter(values.meterNumber.trim(), amount);
-                if (res.status === 'SUCCESS') {
-                    message.success('Auto-credited');
-                    setCurrentStep(1);
-                    setResult({
-                        transactionId: Date.now(),
-                        meterNumber: values.meterNumber.trim(),
-                        meterType: 'PIPING',
-                        amount: amount,
-                        message: "Auto-credited"
-                    });
-                } else {
-                    message.error(`Recharge Failed: ${res.message}`);
-                }
-                setProcessing(false);
-                return; 
-            }
+            // Direct client-side Piping meter API call has been disabled. All recharges strictly flow through the backend gasMeterRechargeApi.initiate now.
 
             const response = await gasMeterRechargeApi.initiate({
-                meterNumber: values.meterNumber.trim(),
-                meterType,
+                meterNumber: values.meterNumber?.trim(),
+                meterType: 'PIPING',
                 amount,
                 paymentMethod,
                 phone: values.phone,
@@ -445,10 +391,10 @@ const GasMeterRechargePage: React.FC = () => {
                             </div>
                             <div>
                                 <Title level={3} style={{ color: '#fff', margin: 0, fontWeight: 800 }}>
-                                    Gas Meter Recharge
+                                    Piped Gas Meter Recharge
                                 </Title>
                                 <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
-                                    Recharge Token-Based & Piping Gas Meters instantly
+                                    Recharge LoRa / NB-IoT & GPRS Piped Gas Meters instantly
                                 </Text>
                             </div>
                         </Space>
@@ -497,7 +443,7 @@ const GasMeterRechargePage: React.FC = () => {
 
                         {/* ── STEP 0: FORM ─────────────────────────────── */}
                         {currentStep === 0 && (
-                            <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                            <Form form={form} layout="vertical" onFinish={handleSubmit} preserve={true}>
 
                                 {/* Registered Meter Selection */}
                                 {registeredMeters.length > 0 && (
@@ -541,158 +487,108 @@ const GasMeterRechargePage: React.FC = () => {
                                     </Form.Item>
                                 )}
 
-                                {/* Meter Type Selector */}
+                                {/* Meter Type Dropdown */}
                                 <Form.Item label={<Text strong>Meter Type</Text>}>
-                                    <Radio.Group
-                                        value={meterType}
-                                        onChange={(e) => setMeterType(e.target.value)}
-                                        style={{ width: '100%' }}
-                                    >
-                                        <Row gutter={12}>
-                                            {[
-                                                {
-                                                    value: 'TOKEN',
-                                                    icon: '⚡',
-                                                    label: 'Token-Based Prepaid',
-                                                    desc: 'Generates a recharge token to enter on meter',
-                                                    color: '#1890ff',
-                                                },
-                                                {
-                                                    value: 'PIPING',
-                                                    icon: '🔧',
-                                                    label: 'Piping Gas Meter',
-                                                    desc: 'Direct network credit, no token needed',
-                                                    color: '#52c41a',
-                                                },
-                                            ].map((opt) => (
-                                                <Col span={12} key={opt.value}>
-                                                    <div
-                                                        onClick={() => setMeterType(opt.value as any)}
-                                                        style={{
-                                                            border: `2px solid ${meterType === opt.value ? opt.color : '#e8e8e8'}`,
-                                                            borderRadius: 12,
-                                                            padding: '14px 12px',
-                                                            cursor: 'pointer',
-                                                            background: meterType === opt.value
-                                                                ? `${opt.color}10`
-                                                                : '#fff',
-                                                            transition: 'all 0.2s',
-                                                            textAlign: 'center',
-                                                        }}
-                                                    >
-                                                        <div style={{ fontSize: 24 }}>{opt.icon}</div>
-                                                        <Text strong style={{ display: 'block', fontSize: 13, color: meterType === opt.value ? opt.color : '#333' }}>
-                                                            {opt.label}
-                                                        </Text>
-                                                        <Text style={{ fontSize: 11, color: '#888' }}>{opt.desc}</Text>
-                                                    </div>
-                                                </Col>
-                                            ))}
-                                        </Row>
-                                    </Radio.Group>
-                                </Form.Item>
-
-                                {/* Piping Recharge Mode (Only for Piping) */}
-                                {meterType === 'PIPING' && (
-                                    <Form.Item label={<Text strong>Piping Recharge Mode</Text>}>
-                                        <Radio.Group
-                                            value={pipingMode}
-                                            onChange={(e) => setPipingMode(e.target.value)}
-                                            style={{ width: '100%' }}
-                                        >
-                                            <Row gutter={12}>
-                                                <Col span={12}>
-                                                    <Radio.Button value="ORDINARY" style={{ width: '100%', textAlign: 'center' }}>
-                                                        Ordinary Top-up
-                                                    </Radio.Button>
-                                                </Col>
-                                                <Col span={12}>
-                                                    <Radio.Button value="TOKEN_PUSH" style={{ width: '100%', textAlign: 'center' }}>
-                                                        Push Token
-                                                    </Radio.Button>
-                                                </Col>
-                                            </Row>
-                                        </Radio.Group>
-                                    </Form.Item>
-                                )}
-
-                                {/* Meter Number */}
-                                <Form.Item
-                                    name="meterNumber"
-                                    label={<Text strong>Meter Number</Text>}
-                                    rules={[
-                                        { required: true, message: 'Please enter the meter number.' },
-                                        { min: 4, message: 'Meter number must be at least 4 characters.' },
-                                    ]}
-                                >
-                                    <Input
-                                        prefix={<FireOutlined style={{ color: '#ff6b35' }} />}
-                                        placeholder="e.g. 12345678 or MTR-001234"
+                                    <Select
                                         size="large"
+                                        value={meterType}
+                                        onChange={(val) => setMeterType(val as any)}
                                         style={{ borderRadius: 8 }}
-                                    />
+                                    >
+                                        <Option value="LORA_NB">LoRa / NB-IoT Meter</Option>
+                                        <Option value="GPRS">GPRS Piped Gas Meter</Option>
+                                    </Select>
                                 </Form.Item>
 
-                                {/* Amount Selection (Only if not token push for piping) */}
-                                {!(meterType === 'PIPING' && pipingMode === 'TOKEN_PUSH') && (
-                                    <Form.Item label={<Text strong>Recharge Amount (RWF)</Text>}>
-                                        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
-                                            {PREDEFINED_AMOUNTS.map((amt) => (
-                                                <Col span={8} key={amt}>
-                                                    <div
-                                                        onClick={() => {
-                                                            setSelectedAmount(amt);
-                                                            setCustomAmount('');
-                                                        }}
-                                                        style={{
-                                                            border: `2px solid ${selectedAmount === amt ? '#ff6b35' : '#e8e8e8'}`,
-                                                            borderRadius: 8,
-                                                            padding: '10px 4px',
-                                                            cursor: 'pointer',
-                                                            textAlign: 'center',
-                                                            background: selectedAmount === amt ? '#fff7f0' : '#fff',
-                                                            transition: 'all 0.2s',
-                                                        }}
-                                                    >
-                                                        <Text
-                                                            strong
-                                                            style={{
-                                                                color: selectedAmount === amt ? '#ff6b35' : '#333',
-                                                                fontSize: 13,
-                                                            }}
-                                                        >
-                                                            {amt.toLocaleString()}
-                                                        </Text>
-                                                    </div>
-                                                </Col>
-                                            ))}
-                                        </Row>
+                                {/* Conditional Meter Number / IMEI Input */}
+                                {meterType === 'GPRS' && (
+                                    <Form.Item
+                                        name="meterNumber"
+                                        label={<Text strong>Gas Meter Number (IMEI)</Text>}
+                                        rules={[
+                                            { required: true, message: 'Please enter the Gas Meter Number (IMEI).' },
+                                            { min: 4, message: 'Meter number must be at least 4 characters.' },
+                                        ]}
+                                    >
                                         <Input
-                                            prefix="RWF"
-                                            placeholder="Or enter custom amount (min 500)"
-                                            value={customAmount}
+                                            prefix={<FireOutlined style={{ color: '#ff6b35' }} />}
+                                            placeholder="Enter IMEI number"
                                             size="large"
                                             style={{ borderRadius: 8 }}
-                                            onChange={(e) => {
-                                                setCustomAmount(e.target.value);
-                                                setSelectedAmount(null);
-                                            }}
-                                            type="number"
-                                            min={500}
                                         />
                                     </Form.Item>
                                 )}
 
-                                {/* Piping Token Input */}
-                                {meterType === 'PIPING' && pipingMode === 'TOKEN_PUSH' && (
+                                {meterType === 'LORA_NB' && !form.getFieldValue('meterNumber') && registeredMeters.length > 0 && (
+                                    <div style={{ marginBottom: 16 }}>
+                                        <Alert
+                                            type="info"
+                                            showIcon
+                                            message="Please select a registered meter from the list above."
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Amount Selection - Shown for Both */}
+                                <Form.Item
+                                    label={<Text strong>Gas Volume (m³)</Text>}
+                                    help={<Text type="secondary" style={{ fontSize: 11 }}>Enter gas volume in cubic meters</Text>}
+                                >
+                                    <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+                                        {PREDEFINED_AMOUNTS.map((amt) => (
+                                            <Col span={8} key={amt}>
+                                                <div
+                                                    onClick={() => {
+                                                        setSelectedAmount(amt);
+                                                        setCustomAmount('');
+                                                    }}
+                                                    style={{
+                                                        border: `2px solid ${selectedAmount === amt ? '#ff6b35' : '#e8e8e8'}`,
+                                                        borderRadius: 8,
+                                                        padding: '10px 4px',
+                                                        cursor: 'pointer',
+                                                        textAlign: 'center',
+                                                        background: selectedAmount === amt ? '#fff7f0' : '#fff',
+                                                        transition: 'all 0.2s',
+                                                    }}
+                                                >
+                                                    <Text
+                                                        strong
+                                                        style={{
+                                                            color: selectedAmount === amt ? '#ff6b35' : '#333',
+                                                            fontSize: 13,
+                                                        }}
+                                                    >
+                                                        {amt} m³
+                                                    </Text>
+                                                </div>
+                                            </Col>
+                                        ))}
+                                    </Row>
+                                    <Input
+                                        prefix="m³"
+                                        placeholder="Or enter custom volume (e.g. 5)"
+                                        value={customAmount}
+                                        size="large"
+                                        style={{ borderRadius: 8 }}
+                                        onChange={(e) => {
+                                            setCustomAmount(e.target.value);
+                                            setSelectedAmount(null);
+                                        }}
+                                        type="number"
+                                        min={1}
+                                    />
+                                </Form.Item>
+
+                                {/* Optional Token Input for GPRS */}
+                                {meterType === 'GPRS' && (
                                     <Form.Item
                                         name="pipingToken"
-                                        label={<Text strong>STS Token (20 digits)</Text>}
-                                        rules={[{ required: true, message: 'Please enter the 20-digit token.' }]}
+                                        label={<Text strong>STS Token (Optional Future)</Text>}
                                     >
                                         <Input
                                             prefix={<KeyOutlined style={{ color: '#ff6b35' }} />}
-                                            placeholder="Enter 20-digit token to push"
+                                            placeholder="Enter 20-digit token to push (if available)"
                                             size="large"
                                             style={{ borderRadius: 8 }}
                                         />
@@ -775,14 +671,12 @@ const GasMeterRechargePage: React.FC = () => {
                                         style={{ borderRadius: 8, marginBottom: 16 }}
                                         message={
                                             <span>
-                                                Recharging <strong>{meterType === 'TOKEN' ? 'Token Meter' : 'Piping Meter'}</strong> for{' '}
-                                                <strong>{getEffectiveAmount().toLocaleString()} RWF</strong>
-                                                {meterType === 'TOKEN' && (
-                                                    <> ≈ <strong>{(getEffectiveAmount() / 1500).toFixed(2)} kg</strong> LPG</>
-                                                )}
-                                                {meterType === 'PIPING' && (
-                                                    <> ≈ <strong>{(getEffectiveAmount() / 850).toFixed(2)} m³</strong> gas</>
-                                                )}
+                                                Recharging <strong>{meterType === 'LORA_NB' ? 'LoRa / NB-IoT Meter' : 'GPRS Piped Gas Meter'}</strong> with{' '}
+                                                <strong>{getEffectiveAmount()} m³</strong> gas
+                                                <br />
+                                                <Text style={{ fontSize: 12, display: 'block', marginTop: 4, color: '#666' }}>
+                                                    Estimated Cost: <strong>{(getEffectiveAmount() * 850).toLocaleString()} RWF</strong>
+                                                </Text>
                                             </span>
                                         }
                                     />
@@ -806,7 +700,7 @@ const GasMeterRechargePage: React.FC = () => {
                                         boxShadow: '0 4px 16px rgba(255,107,53,0.4)',
                                     }}
                                 >
-                                    {processing ? 'Processing Recharge...' : '⚡ Recharge Meter'}
+                                    {processing ? 'Processing Recharge...' : '⚡ Recharge Piped Gas Meter'}
                                 </Button>
                             </Form>
                         )}
@@ -1021,6 +915,9 @@ const GasMeterRechargePage: React.FC = () => {
             </Row>
         </div>
     );
+};
+
+export default GasMeterRechargePage;
 };
 
 export default GasMeterRechargePage;
