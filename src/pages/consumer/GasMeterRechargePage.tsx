@@ -182,7 +182,7 @@ const GasMeterRechargePage: React.FC = () => {
                 paymentMethod,
                 phone: values.phone,
                 cardId: values.cardId,
-                token: values.pipingToken,
+                token: values.pipingToken?.replace(/\s/g, ''), // Remove spaces for 20-digit STS
                 provider: 'piping',
             });
 
