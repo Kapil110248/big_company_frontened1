@@ -580,17 +580,23 @@ const GasMeterRechargePage: React.FC = () => {
 
                                 {/* Optional Token Input for GPRS */}
                                 {meterType === 'GPRS' && (
-                                    <Form.Item
-                                        name="pipingToken"
-                                        label={<Text strong>STS Token (Optional Future)</Text>}
-                                    >
-                                        <Input
-                                            prefix={<KeyOutlined style={{ color: '#ff6b35' }} />}
-                                            placeholder="Enter 20-digit token to push (if available)"
-                                            size="large"
-                                            style={{ borderRadius: 8 }}
-                                        />
-                                    </Form.Item>
+                                    <>
+                                        <Divider style={{ margin: '24px 0 12px 0', fontSize: 12, color: '#999' }} plain>
+                                            <Text type="secondary" style={{ fontSize: 12 }}>— OR PUSH STS TOKEN —</Text>
+                                        </Divider>
+                                        <Form.Item
+                                            name="pipingToken"
+                                            label={<Text strong>STS Token (Pre-Bought)</Text>}
+                                            help={<Text type="secondary" style={{ fontSize: 11 }}>Type a 20-digit token code if you already bought one to push to the meter. Leave volume empty.</Text>}
+                                        >
+                                            <Input
+                                                prefix={<KeyOutlined style={{ color: '#ff6b35' }} />}
+                                                placeholder="Enter 20-digit token code"
+                                                size="large"
+                                                style={{ borderRadius: 8 }}
+                                            />
+                                        </Form.Item>
+                                    </>
                                 )}
 
                                 <Divider style={{ margin: '16px 0' }} />
