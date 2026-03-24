@@ -177,7 +177,7 @@ const GasMeterRechargePage: React.FC = () => {
 
             const response = await gasMeterRechargeApi.initiate({
                 meterNumber: values.meterNumber?.trim(),
-                meterType: 'PIPING',
+                meterType: meterType === 'LORA_NB' ? 'TOKEN' : 'PIPING',
                 amount,
                 paymentMethod,
                 phone: values.phone,
@@ -500,24 +500,22 @@ const GasMeterRechargePage: React.FC = () => {
                                     </Select>
                                 </Form.Item>
 
-                                {/* Conditional Meter Number / IMEI Input */}
-                                {meterType === 'GPRS' && (
-                                    <Form.Item
-                                        name="meterNumber"
-                                        label={<Text strong>Gas Meter Number (IMEI)</Text>}
-                                        rules={[
-                                            { required: true, message: 'Please enter the Gas Meter Number (IMEI).' },
-                                            { min: 4, message: 'Meter number must be at least 4 characters.' },
-                                        ]}
-                                    >
-                                        <Input
-                                            prefix={<FireOutlined style={{ color: '#ff6b35' }} />}
-                                            placeholder="Enter IMEI number"
-                                            size="large"
-                                            style={{ borderRadius: 8 }}
-                                        />
-                                    </Form.Item>
-                                )}
+                                {/* Meter Number / IMEI Input (Always Rendered or dynamic label) */}
+                                <Form.Item
+                                    name="meterNumber"
+                                    label={<Text strong>{meterType === 'GPRS' ? 'Gas Meter Number (IMEI)' : 'Meter Number'}</Text>}
+                                    rules={[
+                                        { required: true, message: 'Please enter the Meter Number.' },
+                                        { min: 4, message: 'Meter number must be at least 4 characters.' },
+                                    ]}
+                                >
+                                    <Input
+                                        prefix={<FireOutlined style={{ color: '#ff6b35' }} />}
+                                        placeholder={meterType === 'GPRS' ? "Enter IMEI number" : "e.g. 12345678 or MTR-00123"}
+                                        size="large"
+                                        style={{ borderRadius: 8 }}
+                                    />
+                                </Form.Item>
 
                                 {meterType === 'LORA_NB' && !form.getFieldValue('meterNumber') && registeredMeters.length > 0 && (
                                     <div style={{ marginBottom: 16 }}>
@@ -917,7 +915,5 @@ const GasMeterRechargePage: React.FC = () => {
     );
 };
 
-export default GasMeterRechargePage;
-};
 
 export default GasMeterRechargePage;
