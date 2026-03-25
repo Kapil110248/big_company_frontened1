@@ -65,7 +65,7 @@ interface RechargeTransaction {
     created_at: string;
 }
 
-const PREDEFINED_AMOUNTS = [5, 10, 20, 50, 100, 200];
+const PREDEFINED_AMOUNTS = [500, 1000, 2000, 5000, 10000, 20000];
 
 const GasMeterRechargePage: React.FC = () => {
     const [form] = Form.useForm();
@@ -154,11 +154,11 @@ const GasMeterRechargePage: React.FC = () => {
         const amount = getEffectiveAmount();
         const isPushToken = meterType === 'GPRS' && !!values.pipingToken;
 
-        // Zero cost when pushing an existing token
-        const cost = isPushToken ? 0 : amount * 850;
+        // Money amount is chosen directly now
+        const cost = isPushToken ? 0 : amount;
 
         if (!isPushToken && amount < 1) {
-            message.error('Minimum recharge volume is 1 m³.');
+            message.error('Minimum recharge amount is 1 RWF.');
             return;
         }
 
@@ -178,8 +178,8 @@ const GasMeterRechargePage: React.FC = () => {
 
             const response = await gasMeterRechargeApi.initiate({
                 meterNumber: values.meterNumber?.trim(),
-                meterType: meterType === 'LORA_NB' ? 'TOKEN' : 'PIPING',
-                amount,
+                meterType: 'PIPING', // Both LoRa/NB and GPRS in this page are Piped Gas Meters
+                amount: amount,
                 paymentMethod,
                 phone: values.phone,
                 cardId: values.cardId,
@@ -528,10 +528,10 @@ const GasMeterRechargePage: React.FC = () => {
                                     </div>
                                 )}
 
-                                {/* Amount Selection - Shown for Both */}
+                                {/* Amount Selection - Money Based */}
                                 <Form.Item
-                                    label={<Text strong>Gas Volume (m³)</Text>}
-                                    help={<Text type="secondary" style={{ fontSize: 11 }}>Enter gas volume in cubic meters</Text>}
+                                    label={<Text strong>Recharge Amount (RWF)</Text>}
+                                    help={<Text type="secondary" style={{ fontSize: 11 }}>Choose or enter amount in RWF. Conversion to m³ will be done based on current rates.</Text>}
                                 >
                                     <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
                                         {PREDEFINED_AMOUNTS.map((amt) => (
@@ -558,24 +558,24 @@ const GasMeterRechargePage: React.FC = () => {
                                                             fontSize: 13,
                                                         }}
                                                     >
-                                                        {amt} m³
+                                                        {amt.toLocaleString()} RWF
                                                     </Text>
                                                 </div>
                                             </Col>
                                         ))}
                                     </Row>
                                     <Input
-                                        prefix="m³"
-                                        placeholder="Or enter custom volume (e.g. 5)"
+                                        prefix="RWF"
+                                        placeholder="Or enter custom amount (e.g. 500)"
                                         value={customAmount}
                                         size="large"
                                         style={{ borderRadius: 8 }}
                                         onChange={(e) => {
-                                            setCustomAmount(e.target.value);
-                                            setSelectedAmount(null);
+                                                            setCustomAmount(e.target.value);
+                                                            setSelectedAmount(null);
                                         }}
                                         type="number"
-                                        min={1}
+                                        min={100}
                                     />
                                 </Form.Item>
 
@@ -676,12 +676,8 @@ const GasMeterRechargePage: React.FC = () => {
                                         style={{ borderRadius: 8, marginBottom: 16 }}
                                         message={
                                             <span>
-                                                Recharging <strong>{meterType === 'LORA_NB' ? 'LoRa / NB-IoT Meter' : 'GPRS Piped Gas Meter'}</strong> with{' '}
-                                                <strong>{getEffectiveAmount()} m³</strong> gas
-                                                <br />
-                                                <Text style={{ fontSize: 12, display: 'block', marginTop: 4, color: '#666' }}>
-                                                    Estimated Cost: <strong>{(getEffectiveAmount() * 850).toLocaleString()} RWF</strong>
-                                                </Text>
+                                                Recharging <strong>{meterType === 'LORA_NB' ? 'LoRa / NB-IoT' : 'GPRS'} Meter</strong> with{' '}
+                                                <strong>{getEffectiveAmount().toLocaleString()} RWF</strong>
                                             </span>
                                         }
                                     />
