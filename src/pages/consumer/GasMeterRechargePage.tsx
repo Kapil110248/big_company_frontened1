@@ -178,13 +178,14 @@ const GasMeterRechargePage: React.FC = () => {
 
             const response = await gasMeterRechargeApi.initiate({
                 meterNumber: values.meterNumber?.trim(),
-                meterType: 'PIPING', // Both LoRa/NB and GPRS in this page are Piped Gas Meters
+                // Differentiate logic: LORA_NB maps to TOKEN (Type A), GPRS maps to PIPING (Type B)
+                meterType: meterType === 'LORA_NB' ? 'TOKEN' : 'PIPING',
                 amount: amount,
                 paymentMethod,
                 phone: values.phone,
                 cardId: values.cardId,
-                token: values.pipingToken?.replace(/\s/g, ''), // Remove spaces for 20-digit STS
-                provider: 'piping',
+                token: values.pipingToken?.replace(/\s/g, ''),
+                provider: meterType === 'LORA_NB' ? 'stronpower' : 'piping',
             });
 
             if (response.data.success) {
