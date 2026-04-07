@@ -178,14 +178,13 @@ const GasMeterRechargePage: React.FC = () => {
 
             const response = await gasMeterRechargeApi.initiate({
                 meterNumber: values.meterNumber?.trim(),
-                // Differentiate logic: LORA_NB maps to TOKEN (Type A), GPRS maps to PIPING (Type B)
-                meterType: meterType === 'LORA_NB' ? 'TOKEN' : 'PIPING',
+                meterType: 'TOKEN' as 'TOKEN' | 'PIPING',
                 amount: amount,
                 paymentMethod,
                 phone: values.phone,
                 cardId: values.cardId,
                 token: values.pipingToken?.replace(/\s/g, ''),
-                provider: meterType === 'LORA_NB' ? 'stronpower' : 'piping',
+                provider: meterType === 'LORA_NB' ? 'stronpower' : 'zhongyi',
             });
 
             if (response.data.success) {
@@ -193,7 +192,7 @@ const GasMeterRechargePage: React.FC = () => {
                 setResult({
                     transactionId: data.transactionId,
                     meterNumber: data.meterNumber,
-                    meterType: data.meterType,
+                    meterType: data.meterType as 'TOKEN' | 'PIPING',
                     amount: data.amount,
                     units: data.units,
                     token: data.token,
@@ -266,10 +265,16 @@ const GasMeterRechargePage: React.FC = () => {
           ${result.units ? `<div class="row"><span class="label">Gas Units:</span><span class="value">${result.units} ${result.meterType === 'TOKEN' ? 'kg' : 'm³'}</span></div>` : ''}
           ${result.apiReference ? `<div class="row"><span class="label">API Reference:</span><span class="value">${result.apiReference}</span></div>` : ''}
           ${result.token ? `
-            <div class="token-block">
-              <div class="token-label">⚡ ENTER THIS TOKEN INTO YOUR METER</div>
-              <div class="token-value">${result.token}</div>
-              <div style="font-size:11px;color:#666;">Type these digits into your gas meter keypad</div>
+            <div class="token-block" style="${result.message?.includes('(Pushed to Meter)') ? 'background:#f6ffed;border-color:#52c41a;' : ''}">
+              <div class="token-label" style="${result.message?.includes('(Pushed to Meter)') ? 'color:#52c41a;' : ''}">
+                ${result.message?.includes('(Pushed to Meter)') ? '🛰️ TOKEN PUSHED TO METER' : '⚡ ENTER THIS TOKEN INTO YOUR METER'}
+              </div>
+              <div class="token-value" style="${result.message?.includes('(Pushed to Meter)') ? 'color:#1d39c4;' : ''}">${result.token}</div>
+              <div style="font-size:11px;color:#666;">
+                ${result.message?.includes('(Pushed to Meter)') 
+                  ? 'This token was transferred automatically via GPRS.<br/>Manual entry is NOT required.' 
+                  : 'Type these digits into your gas meter keypad'}
+              </div>
             </div>
           ` : `
             <div class="token-block" style="background:#f6ffed;border-color:#52c41a;">
@@ -329,6 +334,13 @@ const GasMeterRechargePage: React.FC = () => {
                 if (rec.meter_type === 'PIPING' || !token) {
                     return <Tag color="green">Auto-credited</Tag>;
                 }
+                
+                // Heuristic: Check if this was a GPRS meter from local state
+                const meterInfo = registeredMeters.find(m => m.meter_number === rec.meter_number);
+                if (meterInfo?.isGprs) {
+                    return <Tag color="cyan">Remote-Pushed</Tag>;
+                }
+
                 return (
                     <Space>
                         <Text code style={{ fontSize: 11 }}>{token.substring(0, 10)}...</Text>
@@ -580,26 +592,7 @@ const GasMeterRechargePage: React.FC = () => {
                                     />
                                 </Form.Item>
 
-                                {/* Optional Token Input for GPRS */}
-                                {meterType === 'GPRS' && (
-                                    <>
-                                        <Divider style={{ margin: '24px 0 12px 0', fontSize: 12, color: '#999' }} plain>
-                                            <Text type="secondary" style={{ fontSize: 12 }}>— OR PUSH STS TOKEN —</Text>
-                                        </Divider>
-                                        <Form.Item
-                                            name="pipingToken"
-                                            label={<Text strong>STS Token (Pre-Bought)</Text>}
-                                            help={<Text type="secondary" style={{ fontSize: 11 }}>Type a 20-digit token code if you already bought one to push to the meter. Leave volume empty.</Text>}
-                                        >
-                                            <Input
-                                                prefix={<KeyOutlined style={{ color: '#ff6b35' }} />}
-                                                placeholder="Enter 20-digit token code"
-                                                size="large"
-                                                style={{ borderRadius: 8 }}
-                                            />
-                                        </Form.Item>
-                                    </>
-                                )}
+
 
                                 <Divider style={{ margin: '16px 0' }} />
 
@@ -754,50 +747,72 @@ const GasMeterRechargePage: React.FC = () => {
                                     ))}
                                 </Row>
 
-                                {/* TOKEN Display */}
-                                {result.meterType === 'TOKEN' && result.token && (
-                                    <div
-                                        style={{
-                                            background: 'linear-gradient(135deg, #e6f4ff, #bae0ff)',
-                                            border: '2px solid #1890ff',
-                                            borderRadius: 14,
-                                            padding: '20px 24px',
-                                            marginBottom: 20,
-                                            textAlign: 'center',
-                                        }}
-                                    >
-                                        <KeyOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 8 }} />
-                                        <div style={{ fontSize: 12, color: '#1890ff', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
-                                            ⚡ Enter This Token Into Your Meter
-                                        </div>
-                                        <div
-                                            style={{
-                                                fontSize: 28,
-                                                fontWeight: 900,
-                                                letterSpacing: 6,
-                                                color: '#003a8c',
-                                                fontFamily: 'Courier New, monospace',
-                                                margin: '12px 0',
-                                                background: '#fff',
-                                                padding: '12px 16px',
-                                                borderRadius: 8,
-                                                border: '1px dashed #1890ff',
-                                            }}
-                                        >
-                                            {result.token}
-                                        </div>
-                                        <Button
-                                            icon={<CopyOutlined />}
-                                            onClick={() => copyToken(result.token!)}
-                                            style={{ borderRadius: 6, borderColor: '#1890ff', color: '#1890ff' }}
-                                        >
-                                            Copy Token
-                                        </Button>
-                                        <div style={{ marginTop: 10, fontSize: 12, color: '#666' }}>
-                                            Enter the digits above into your gas meter keypad to activate the credit.
-                                        </div>
-                                    </div>
-                                )}
+                                        {/* TOKEN Display */}
+                                        {result.meterType === 'TOKEN' && result.token && (
+                                            <div
+                                                style={{
+                                                    background: result.message?.includes('(Pushed to Meter)') 
+                                                        ? 'linear-gradient(135deg, #f6ffed, #d9f7be)' // Success green for pushed
+                                                        : 'linear-gradient(135deg, #e6f4ff, #bae0ff)', // Original blue for manual
+                                                    border: `2px solid ${result.message?.includes('(Pushed to Meter)') ? '#52c41a' : '#1890ff'}`,
+                                                    borderRadius: 14,
+                                                    padding: '20px 24px',
+                                                    marginBottom: 20,
+                                                    textAlign: 'center',
+                                                }}
+                                            >
+                                                {result.message?.includes('(Pushed to Meter)') ? (
+                                                    <CheckCircleOutlined style={{ fontSize: 24, color: '#52c41a', marginBottom: 8 }} />
+                                                ) : (
+                                                    <KeyOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 8 }} />
+                                                )}
+                                                
+                                                <div style={{ 
+                                                    fontSize: 12, 
+                                                    color: result.message?.includes('(Pushed to Meter)') ? '#389e0d' : '#1890ff', 
+                                                    fontWeight: 600, 
+                                                    textTransform: 'uppercase', 
+                                                    letterSpacing: 1, 
+                                                    marginBottom: 8 
+                                                }}>
+                                                    {result.message?.includes('(Pushed to Meter)') 
+                                                        ? '🛰️ Token Transferred Successfully' 
+                                                        : '⚡ Enter This Token Into Your Meter'}
+                                                </div>
+                                                <div
+                                                    style={{
+                                                        fontSize: 28,
+                                                        fontWeight: 900,
+                                                        letterSpacing: 6,
+                                                        color: result.message?.includes('(Pushed to Meter)') ? '#1d39c4' : '#003a8c',
+                                                        fontFamily: 'Courier New, monospace',
+                                                        margin: '12px 0',
+                                                        background: '#fff',
+                                                        padding: '12px 16px',
+                                                        borderRadius: 8,
+                                                        border: `1px dashed ${result.message?.includes('(Pushed to Meter)') ? '#52c41a' : '#1890ff'}`,
+                                                    }}
+                                                >
+                                                    {result.token}
+                                                </div>
+                                                <Button
+                                                    icon={<CopyOutlined />}
+                                                    onClick={() => copyToken(result.token!)}
+                                                    style={{ 
+                                                        borderRadius: 6, 
+                                                        borderColor: result.message?.includes('(Pushed to Meter)') ? '#52c41a' : '#1890ff', 
+                                                        color: result.message?.includes('(Pushed to Meter)') ? '#52c41a' : '#1890ff' 
+                                                    }}
+                                                >
+                                                    Copy Token
+                                                </Button>
+                                                <div style={{ marginTop: 10, fontSize: 13, color: '#444', fontWeight: 500 }}>
+                                                    {result.message?.includes('(Pushed to Meter)') 
+                                                        ? 'This token has been sent directly to your GPRS meter. No manual entry is required.'
+                                                        : 'Enter the digits above into your gas meter keypad to activate the credit.'}
+                                                </div>
+                                            </div>
+                                        )}
 
                                 {/* PIPING: auto-credit message */}
                                 {result.meterType === 'PIPING' && (
