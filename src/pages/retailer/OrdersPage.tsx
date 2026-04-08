@@ -60,7 +60,7 @@ interface Order {
   subtotal: number;
   discount: number;
   total: number;
-  status: 'pending' | 'processing' | 'ready' | 'completed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'ready' | 'completed' | 'cancelled';
   payment_method: 'dashboard_wallet' | 'credit_wallet' | 'mobile_money' | 'cash' | 'wallet' | 'nfc' | 'credit';
   payment_status: 'pending' | 'paid' | 'refunded';
   notes?: string;
@@ -69,12 +69,20 @@ interface Order {
   completed_at?: string;
   cancelled_at?: string;
   cancel_reason?: string;
+  rejection_reason?: string;
+  cancellation_reason?: string;
+  shipper?: {
+    name: string;
+    phone: string;
+    plate_number: string;
+  };
 }
 
 interface OrderStats {
   // Status counts
   pending: number;
   processing: number;
+  shipped: number;
   ready: number;
   completed_today: number;
   cancelled_today: number;
@@ -89,7 +97,9 @@ interface OrderStats {
 
 const statusColors: Record<string, string> = {
   pending: 'orange',
+  confirmed: 'blue',
   processing: 'blue',
+  shipped: 'purple',
   ready: 'cyan',
   completed: 'green',
   cancelled: 'red',
@@ -132,10 +142,13 @@ export const OrdersPage = () => {
   const [actionModal, setActionModal] = useState<{
     visible: boolean;
     order: Order | null;
-    action: 'accept' | 'reject' | 'ready' | 'complete' | 'cancel' | null;
+    action: 'accept' | 'reject' | 'ready' | 'complete' | 'cancel' | 'ship' | null;
   }>({ visible: false, order: null, action: null });
   const [actionLoading, setActionLoading] = useState(false);
   const [actionNotes, setActionNotes] = useState('');
+  const [shipperName, setShipperName] = useState('');
+  const [shipperPhone, setShipperPhone] = useState('');
+  const [vehiclePlate, setVehiclePlate] = useState('');
 
   // View modal
   const [viewModal, setViewModal] = useState<{ visible: boolean; order: Order | null }>({
@@ -188,7 +201,8 @@ export const OrdersPage = () => {
 
       setStats({
         pending: allOrders.filter((o: Order) => o.status === 'pending').length,
-        processing: allOrders.filter((o: Order) => o.status === 'processing').length,
+        processing: allOrders.filter((o: Order) => o.status === 'processing' || o.status === 'confirmed').length,
+        shipped: allOrders.filter((o: Order) => o.status === 'shipped').length,
         ready: allOrders.filter((o: Order) => o.status === 'ready').length,
         completed_today: completedOrders.length,
         cancelled_today: allOrders.filter((o: Order) => o.status === 'cancelled').length,
@@ -245,8 +259,22 @@ export const OrdersPage = () => {
           message.success('Order cancelled');
           break;
         case 'ready':
-          await retailerApi.updateOrderStatus(order.id, 'ready', actionNotes);
+          await retailerApi.updateOrderStatus(order.id, 'ready', { notes: actionNotes });
           message.success('Order marked as ready');
+          break;
+        case 'ship':
+          if (!shipperName || !shipperPhone || !vehiclePlate) {
+            message.error('Please provide all shipper details');
+            setActionLoading(false);
+            return;
+          }
+          await retailerApi.updateOrderStatus(order.id, 'shipped', {
+            shipper_name: shipperName,
+            shipper_phone: shipperPhone,
+            vehicle_plate: vehiclePlate,
+            notes: actionNotes
+          });
+          message.success('Order marked as shipped');
           break;
         case 'complete':
           await retailerApi.fulfillOrder(order.id);
@@ -269,6 +297,7 @@ export const OrdersPage = () => {
       case 'accept': return 'Accept Order';
       case 'reject': return 'Reject Order';
       case 'ready': return 'Mark as Ready';
+      case 'ship': return 'Ship Order';
       case 'complete': return 'Complete Order';
       case 'cancel': return 'Cancel Order';
       default: return 'Order Action';
@@ -396,7 +425,25 @@ export const OrdersPage = () => {
               </Button>
             </>
           )}
-          {record.status === 'processing' && (
+          {(record.status === 'processing' || record.status === 'confirmed') && (
+            <Space>
+              <Button
+                type="primary"
+                size="small"
+                icon={<TruckOutlined />}
+                onClick={() => setActionModal({ visible: true, order: record, action: 'ship' })}
+              >
+                Ship
+              </Button>
+              <Button
+                size="small"
+                onClick={() => setActionModal({ visible: true, order: record, action: 'ready' })}
+              >
+                Ready
+              </Button>
+            </Space>
+          )}
+          {record.status === 'shipped' && (
             <Button
               type="primary"
               size="small"
@@ -507,6 +554,9 @@ export const OrdersPage = () => {
                   <Badge count={stats.processing} showZero overflowCount={999}>
                     <Tag color="blue" style={{ marginRight: 0 }}>Processing</Tag>
                   </Badge>
+                  <Badge count={stats.shipped} showZero overflowCount={999}>
+                    <Tag color="purple" style={{ marginRight: 0 }}>Shipped</Tag>
+                  </Badge>
                   <Badge count={stats.ready} showZero overflowCount={999}>
                     <Tag color="cyan" style={{ marginRight: 0 }}>Ready</Tag>
                   </Badge>
@@ -546,7 +596,9 @@ export const OrdersPage = () => {
             >
               <Select.Option value="">All Status</Select.Option>
               <Select.Option value="pending">Pending</Select.Option>
+              <Select.Option value="confirmed">Confirmed</Select.Option>
               <Select.Option value="processing">Processing</Select.Option>
+              <Select.Option value="shipped">Shipped</Select.Option>
               <Select.Option value="ready">Ready</Select.Option>
               <Select.Option value="completed">Completed</Select.Option>
               <Select.Option value="cancelled">Cancelled</Select.Option>
@@ -597,8 +649,11 @@ export const OrdersPage = () => {
         title={getActionTitle()}
         open={actionModal.visible}
         onCancel={() => {
-          setActionModal({ visible: false, order: null, action: null });
           setActionNotes('');
+          setShipperName('');
+          setShipperPhone('');
+          setVehiclePlate('');
+          setActionModal({ visible: false, order: null, action: null });
         }}
         onOk={handleAction}
         confirmLoading={actionLoading}
@@ -632,8 +687,8 @@ export const OrdersPage = () => {
               </Form.Item>
             )}
 
-            {(actionModal.action === 'accept' || actionModal.action === 'ready') && (
-              <Form.Item label="Notes (optional)" style={{ marginBottom: 0 }}>
+            {(actionModal.action === 'accept' || actionModal.action === 'ready' || actionModal.action === 'ship') && (
+              <Form.Item label="Notes (optional)" style={{ marginBottom: 16 }}>
                 <Input.TextArea
                   value={actionNotes}
                   onChange={(e) => setActionNotes(e.target.value)}
@@ -641,6 +696,32 @@ export const OrdersPage = () => {
                   rows={2}
                 />
               </Form.Item>
+            )}
+
+            {actionModal.action === 'ship' && (
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <Form.Item label="Shipper Name" required>
+                  <Input 
+                    value={shipperName}
+                    onChange={(e) => setShipperName(e.target.value)}
+                    placeholder="Enter driver/shipper name"
+                  />
+                </Form.Item>
+                <Form.Item label="Shipper Phone" required>
+                  <Input 
+                    value={shipperPhone}
+                    onChange={(e) => setShipperPhone(e.target.value)}
+                    placeholder="Enter phone number"
+                  />
+                </Form.Item>
+                <Form.Item label="Vehicle Plate Number" required>
+                  <Input 
+                    value={vehiclePlate}
+                    onChange={(e) => setVehiclePlate(e.target.value)}
+                    placeholder="Enter plate number (e.g. RAD 123 A)"
+                  />
+                </Form.Item>
+              </Space>
             )}
           </div>
         )}
@@ -779,12 +860,13 @@ export const OrdersPage = () => {
             {/* Status Steps */}
             {viewModal.order.status !== 'cancelled' && (
               <Steps
-                current={['pending', 'processing', 'ready', 'completed'].indexOf(viewModal.order.status)}
+                current={['pending', 'processing', 'shipped', 'ready', 'completed'].indexOf(viewModal.order.status)}
                 size="small"
                 style={{ marginBottom: 24 }}
                 items={[
                   { title: 'Pending' },
                   { title: 'Processing' },
+                  { title: 'Shipped' },
                   { title: 'Ready' },
                   { title: 'Completed' },
                 ]}
@@ -796,9 +878,21 @@ export const OrdersPage = () => {
               <div style={{ background: '#fff1f0', padding: 16, borderRadius: 8, marginBottom: 24 }}>
                 <ExclamationCircleOutlined style={{ color: '#ff4d4f', marginRight: 8 }} />
                 <Text strong style={{ color: '#ff4d4f' }}>Order Cancelled</Text>
-                {viewModal.order.cancel_reason && (
-                  <div><Text type="secondary">Reason: {viewModal.order.cancel_reason}</Text></div>
+                {(viewModal.order.rejection_reason || viewModal.order.cancellation_reason || viewModal.order.cancel_reason) && (
+                  <div><Text type="secondary">Reason: {viewModal.order.rejection_reason || viewModal.order.cancellation_reason || viewModal.order.cancel_reason}</Text></div>
                 )}
+              </div>
+            )}
+
+            {viewModal.order.shipper && (
+              <div style={{ background: '#f9f0ff', padding: 16, borderRadius: 8, marginBottom: 24, border: '1px solid #d3adf7' }}>
+                <TruckOutlined style={{ color: '#722ed1', marginRight: 8 }} />
+                <Text strong style={{ color: '#722ed1' }}>Shipping Information</Text>
+                <Descriptions size="small" column={2} style={{ marginTop: 8 }}>
+                  <Descriptions.Item label="Shipper">{viewModal.order.shipper.name}</Descriptions.Item>
+                  <Descriptions.Item label="Phone">{viewModal.order.shipper.phone}</Descriptions.Item>
+                  <Descriptions.Item label="Vehicle Plate">{viewModal.order.shipper.plate_number}</Descriptions.Item>
+                </Descriptions>
               </div>
             )}
 

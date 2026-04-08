@@ -105,12 +105,25 @@ const AccountDetailsPage: React.FC = () => {
     message.success('Data refreshed');
   };
 
+  const handleConfirmDelivery = async (orderId: string) => {
+    try {
+      const response = await adminApi.confirmDelivery(orderId);
+      if (response.data.success) {
+        message.success('Delivery confirmed successfully');
+        fetchAccountDetails();
+      }
+    } catch (error: any) {
+      message.error(error.response?.data?.error || 'Failed to confirm delivery');
+    }
+  };
+
   const getStatusTag = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
       pending: { color: 'orange', icon: <ClockCircleOutlined /> },
       active: { color: 'blue', icon: <CheckCircleOutlined /> },
       completed: { color: 'green', icon: <CheckCircleOutlined /> },
       delivered: { color: 'green', icon: <CheckCircleOutlined /> },
+      shipped: { color: 'purple', icon: <TruckOutlined /> },
       cancelled: { color: 'red', icon: <CloseCircleOutlined /> },
       processing: { color: 'blue', icon: <ClockCircleOutlined /> },
     };
@@ -223,6 +236,22 @@ const AccountDetailsPage: React.FC = () => {
               { title: 'Amount', dataIndex: 'totalAmount', key: 'amount', render: (v: number) => `${v?.toLocaleString()} RWF` },
               { title: 'Status', dataIndex: 'status', key: 'status', render: getStatusTag },
               { title: 'Date', dataIndex: 'createdAt', key: 'date', render: (d: string) => dayjs(d).format('MMM DD, YYYY HH:mm') },
+              {
+                title: 'Actions',
+                key: 'actions',
+                render: (_: any, record: any) => (
+                  (record.status === 'shipped' || record.status === 'ready') && (
+                    <Button 
+                      size="small" 
+                      type="primary" 
+                      icon={<CheckCircleOutlined />}
+                      onClick={() => handleConfirmDelivery(record.id)}
+                    >
+                      Confirm Delivery
+                    </Button>
+                  )
+                )
+              }
             ]}
             pagination={{ pageSize: 5 }}
           />
@@ -422,6 +451,22 @@ const AccountDetailsPage: React.FC = () => {
               { title: 'Amount', dataIndex: 'totalAmount', key: 'amount', render: (v: number) => `${v?.toLocaleString()} RWF` },
               { title: 'Status', dataIndex: 'status', key: 'status', render: getStatusTag },
               { title: 'Date', dataIndex: 'createdAt', key: 'date', render: (d: string) => dayjs(d).format('MMM DD, YYYY') },
+              {
+                title: 'Actions',
+                key: 'actions',
+                render: (_: any, record: any) => (
+                  (record.status === 'shipped' || record.status === 'ready') && (
+                    <Button 
+                      size="small" 
+                      type="primary" 
+                      icon={<CheckCircleOutlined />}
+                      onClick={() => handleConfirmDelivery(record.id)}
+                    >
+                      Confirm Delivery
+                    </Button>
+                  )
+                )
+              }
             ]}
             pagination={{ pageSize: 5 }}
           />

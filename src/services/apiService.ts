@@ -183,8 +183,8 @@ export const retailerApi = {
   getOrders: (params?: any) => api.get("/retailer/orders", { params }),
   getOrder: (id: string) => api.get(`/retailer/orders/${id}`),
   createOrder: (data: any) => api.post("/retailer/orders", data),
-  updateOrderStatus: (id: string, status: string, notes?: string) =>
-    api.put(`/retailer/orders/${id}/status`, { status, notes }),
+  updateOrderStatus: (id: string, status: string, data?: any) =>
+    api.put(`/retailer/orders/${id}/status`, { status, ...data }),
   cancelOrder: (id: string, reason: string) =>
     api.post(`/retailer/orders/${id}/cancel`, { reason }),
   fulfillOrder: (id: string) => api.post(`/retailer/orders/${id}/fulfill`),
@@ -651,10 +651,12 @@ export const adminApi = {
     api.put(`/admin/settlement-invoices/${id}`, data),
   deleteSettlementInvoice: (id: string) => api.delete(`/admin/settlement-invoices/${id}`),
 
-  // ==========================================
-  // EMPLOYEES (for Workers)
+  // Employees (for Workers)
   // ==========================================
   getEmployees: (params?: any) => api.get('/admin/employees', { params }),
+
+  // Order Management
+  confirmDelivery: (id: string) => api.post(`/store/orders/${id}/confirm-delivery`),
 };
 
 // General Auth APIs (Protected)

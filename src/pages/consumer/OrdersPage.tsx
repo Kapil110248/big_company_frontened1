@@ -62,7 +62,7 @@ interface Packager {
 interface Shipper {
   name: string;
   phone: string;
-  vehicle: string;
+  plate_number?: string;
   shipped_at?: string;
 }
 
@@ -88,6 +88,7 @@ interface Order {
   packager?: Packager;
   shipper?: Shipper;
   cancellation_reason?: string;
+  rejection_reason?: string;
   cancelled_by?: 'customer' | 'retailer';
   payment_method?: string;
   meter_id?: string;
@@ -435,14 +436,14 @@ export const OrdersPage: React.FC = () => {
                 </Col>
               </Row>
 
-              {/* Cancellation reason */}
-              {order.status === 'cancelled' && order.cancellation_reason && (
+              {/* Cancellation/Rejection reason */}
+              {(order.status === 'cancelled' || order.status === 'rejected') && (order.cancellation_reason || order.rejection_reason) && (
                 <>
                   <Divider style={{ margin: '16px 0' }} />
                   <Alert
                     type="error"
-                    message={`Cancelled by ${order.cancelled_by === 'retailer' ? 'Retailer' : 'You'}`}
-                    description={order.cancellation_reason}
+                    message={`Cancelled ${order.rejection_reason ? 'by Retailer' : 'by You'}`}
+                    description={order.rejection_reason || order.cancellation_reason}
                     showIcon
                   />
                 </>
@@ -542,12 +543,12 @@ export const OrdersPage: React.FC = () => {
               </Row>
             </Card>
 
-            {/* Cancellation Alert */}
-            {selectedOrder.status === 'cancelled' && selectedOrder.cancellation_reason && (
+            {/* Cancellation/Rejection Alert */}
+            {(selectedOrder.status === 'cancelled' || selectedOrder.status === 'rejected') && (selectedOrder.cancellation_reason || selectedOrder.rejection_reason) && (
               <Alert
                 type="error"
-                message={`Cancelled by ${selectedOrder.cancelled_by === 'retailer' ? 'Retailer' : 'You'}`}
-                description={selectedOrder.cancellation_reason}
+                message={`Cancelled ${selectedOrder.rejection_reason ? 'by Retailer' : 'by You'}`}
+                description={selectedOrder.rejection_reason || selectedOrder.cancellation_reason}
                 showIcon
                 style={{ marginBottom: 16 }}
               />
@@ -578,11 +579,18 @@ export const OrdersPage: React.FC = () => {
                   <Timeline.Item color="purple">
                     <Text strong>Order Shipped</Text>
                     <br />
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {selectedOrder.shipper.shipped_at
-                        ? formatDate(selectedOrder.shipper.shipped_at)
-                        : 'In transit'}
-                    </Text>
+                    <Space direction="vertical" size={2}>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {selectedOrder.shipper.shipped_at
+                          ? formatDate(selectedOrder.shipper.shipped_at)
+                          : 'In transit'}
+                      </Text>
+                      <Descriptions size="small" column={1} bordered={false}>
+                        <Descriptions.Item label="Shipper">{selectedOrder.shipper.name}</Descriptions.Item>
+                        <Descriptions.Item label="Phone">{selectedOrder.shipper.phone}</Descriptions.Item>
+                        <Descriptions.Item label="Plate No.">{selectedOrder.shipper.plate_number || 'N/A'}</Descriptions.Item>
+                      </Descriptions>
+                    </Space>
                   </Timeline.Item>
                 )}
                 {selectedOrder.status === 'delivered' && (
