@@ -208,8 +208,8 @@ export const retailerApi = {
   requestCredit: (data: any) => api.post("/retailer/credit/request", data),
   makeRepayment: (orderId: string, amount: number) =>
     api.post(`/retailer/credit/orders/${orderId}/repay`, { amount }),
-  topUpWallet: (amount: number, source: string) =>
-    api.post("/retailer/wallet/topup", { amount, source }),
+  topUpWallet: (amount: number, source: string, phone?: string) =>
+    api.post("/retailer/wallet/topup", { amount, source, phone }),
 
   // Wholesalers & Stock
   getWholesalers: () => api.get("/retailer/wholesalers"),
@@ -219,6 +219,8 @@ export const retailerApi = {
     api.get("/retailer/wholesaler/orders", { params }),
   getPurchaseOrder: (id: string) =>
     api.get(`/retailer/wholesaler/orders/${id}`),
+  confirmPurchaseOrder: (id: string) =>
+    api.put(`/retailer/wholesaler/orders/${id}/confirm`),
 
   // Branch Management
   getBranches: () => api.get("/retailer/branches"),
@@ -368,10 +370,13 @@ export const wholesalerApi = {
     api.post(`/wholesaler/retailer-orders/${id}/confirm`),
   rejectOrder: (id: string, reason: string) =>
     api.post(`/wholesaler/retailer-orders/${id}/reject`, { reason }),
-  shipOrder: (id: string, trackingNumber?: string, deliveryNotes?: string) =>
+  shipOrder: (id: string, shipper_name: string, shipper_phone: string, vehicle_plate: string, tracking_number?: string, delivery_notes?: string) =>
     api.post(`/wholesaler/retailer-orders/${id}/ship`, {
-      tracking_number: trackingNumber,
-      delivery_notes: deliveryNotes,
+      shipper_name,
+      shipper_phone,
+      vehicle_plate,
+      tracking_number,
+      delivery_notes,
     }),
   confirmDelivery: (id: string) =>
     api.post(`/wholesaler/retailer-orders/${id}/deliver`),
@@ -398,6 +403,7 @@ export const wholesalerApi = {
     api.post(`/wholesaler/credit-requests/${id}/approve`),
   rejectCreditRequest: (id: string, reason?: string) =>
     api.post(`/wholesaler/credit-requests/${id}/reject`, { reason }),
+  getWholesalerHistory: () => api.get("/wholesaler/wallet-history"),
 
   // Profile & Settings
   getProfile: () => api.get("/wholesaler/profile"),
@@ -657,6 +663,7 @@ export const adminApi = {
 
   // Order Management
   confirmDelivery: (id: string) => api.post(`/store/orders/${id}/confirm-delivery`),
+  confirmWholesaleDelivery: (id: string) => api.post(`/admin/wholesale-orders/${id}/confirm-delivery`),
 };
 
 // General Auth APIs (Protected)
@@ -689,6 +696,7 @@ export const gasMeterRechargeApi = {
     cardId?: number;
     token?: string;
     provider?: string;
+    isVendByUnit?: boolean;
   }) => api.post('/gas-recharge/initiate', data),
 
   // Get recharge history for the current user

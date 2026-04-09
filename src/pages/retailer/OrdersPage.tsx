@@ -71,11 +71,9 @@ interface Order {
   cancel_reason?: string;
   rejection_reason?: string;
   cancellation_reason?: string;
-  shipper?: {
-    name: string;
-    phone: string;
-    plate_number: string;
-  };
+  shipperName?: string;
+  shipperPhone?: string;
+  vehiclePlate?: string;
 }
 
 interface OrderStats {
@@ -97,12 +95,21 @@ interface OrderStats {
 
 const statusColors: Record<string, string> = {
   pending: 'orange',
-  confirmed: 'blue',
-  processing: 'blue',
+  confirmed: 'cyan',
+  processing: 'cyan',
   shipped: 'purple',
-  ready: 'cyan',
+  ready: 'blue',
   completed: 'green',
   cancelled: 'red',
+};
+
+const statusLabels: Record<string, string> = {
+  pending: 'PENDING',
+  confirmed: 'PROCEED',
+  processing: 'PROCEED',
+  shipped: 'SHIPPED',
+  completed: 'DELIVERED',
+  cancelled: 'CANCELLED',
 };
 
 const paymentColors: Record<string, string> = {
@@ -269,9 +276,9 @@ export const OrdersPage = () => {
             return;
           }
           await retailerApi.updateOrderStatus(order.id, 'shipped', {
-            shipper_name: shipperName,
-            shipper_phone: shipperPhone,
-            vehicle_plate: vehiclePlate,
+            shipperName: shipperName,
+            shipperPhone: shipperPhone,
+            vehiclePlate: vehiclePlate,
             notes: actionNotes
           });
           message.success('Order marked as shipped');
@@ -384,7 +391,7 @@ export const OrdersPage = () => {
       key: 'status',
       render: (value: string) => (
         <Tag color={statusColors[value] || 'default'}>
-          {value?.toUpperCase()}
+          {statusLabels[value] || value?.toUpperCase()}
         </Tag>
       ),
     },
@@ -444,23 +451,7 @@ export const OrdersPage = () => {
             </Space>
           )}
           {record.status === 'shipped' && (
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => setActionModal({ visible: true, order: record, action: 'ready' })}
-            >
-              Ready
-            </Button>
-          )}
-          {record.status === 'ready' && (
-            <Button
-              type="primary"
-              size="small"
-              icon={<CheckOutlined />}
-              onClick={() => setActionModal({ visible: true, order: record, action: 'complete' })}
-            >
-              Complete
-            </Button>
+            <Tag color="purple">IN TRANSIT</Tag>
           )}
         </Space>
       ),
@@ -552,13 +543,13 @@ export const OrdersPage = () => {
                     <Tag color="orange" style={{ marginRight: 0 }}>Pending</Tag>
                   </Badge>
                   <Badge count={stats.processing} showZero overflowCount={999}>
-                    <Tag color="blue" style={{ marginRight: 0 }}>Processing</Tag>
+                    <Tag color="cyan" style={{ marginRight: 0 }}>Proceed</Tag>
                   </Badge>
                   <Badge count={stats.shipped} showZero overflowCount={999}>
                     <Tag color="purple" style={{ marginRight: 0 }}>Shipped</Tag>
                   </Badge>
                   <Badge count={stats.ready} showZero overflowCount={999}>
-                    <Tag color="cyan" style={{ marginRight: 0 }}>Ready</Tag>
+                    <Tag color="blue" style={{ marginRight: 0 }}>Ready</Tag>
                   </Badge>
                   <Badge count={stats.completed_today} showZero overflowCount={999}>
                     <Tag color="green" style={{ marginRight: 0 }}>Completed</Tag>
@@ -860,15 +851,14 @@ export const OrdersPage = () => {
             {/* Status Steps */}
             {viewModal.order.status !== 'cancelled' && (
               <Steps
-                current={['pending', 'processing', 'shipped', 'ready', 'completed'].indexOf(viewModal.order.status)}
+                current={['pending', 'processing', 'shipped', 'completed'].indexOf(viewModal.order.status)}
                 size="small"
                 style={{ marginBottom: 24 }}
                 items={[
                   { title: 'Pending' },
-                  { title: 'Processing' },
+                  { title: 'Proceed' },
                   { title: 'Shipped' },
-                  { title: 'Ready' },
-                  { title: 'Completed' },
+                  { title: 'Delivered' },
                 ]}
                 className="no-print"
               />
@@ -884,14 +874,14 @@ export const OrdersPage = () => {
               </div>
             )}
 
-            {viewModal.order.shipper && (
+            {viewModal.order.shipperName && (
               <div style={{ background: '#f9f0ff', padding: 16, borderRadius: 8, marginBottom: 24, border: '1px solid #d3adf7' }}>
                 <TruckOutlined style={{ color: '#722ed1', marginRight: 8 }} />
                 <Text strong style={{ color: '#722ed1' }}>Shipping Information</Text>
                 <Descriptions size="small" column={2} style={{ marginTop: 8 }}>
-                  <Descriptions.Item label="Shipper">{viewModal.order.shipper.name}</Descriptions.Item>
-                  <Descriptions.Item label="Phone">{viewModal.order.shipper.phone}</Descriptions.Item>
-                  <Descriptions.Item label="Vehicle Plate">{viewModal.order.shipper.plate_number}</Descriptions.Item>
+                  <Descriptions.Item label="Shipper">{viewModal.order.shipperName}</Descriptions.Item>
+                  <Descriptions.Item label="Phone">{viewModal.order.shipperPhone}</Descriptions.Item>
+                  <Descriptions.Item label="Vehicle Plate">{viewModal.order.vehiclePlate}</Descriptions.Item>
                 </Descriptions>
               </div>
             )}
@@ -906,7 +896,7 @@ export const OrdersPage = () => {
               </Descriptions.Item>
               <Descriptions.Item label="Status">
                 <Tag color={statusColors[viewModal.order.status]}>
-                  {viewModal.order.status?.toUpperCase()}
+                  {statusLabels[viewModal.order.status] || viewModal.order.status?.toUpperCase()}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Created">{formatDate(viewModal.order.created_at)}</Descriptions.Item>

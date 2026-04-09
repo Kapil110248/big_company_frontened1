@@ -89,6 +89,7 @@ const POSPage = () => {
   const [cardStep, setCardStep] = useState<'tap' | 'pin' | 'wallet_choice' | 'reward_id'>('tap');
   const [cardWalletType, setCardWalletType] = useState<'dashboard' | 'credit'>('dashboard');
   const [cardPin, setCardPin] = useState('');
+  const [cardUid, setCardUid] = useState('');
 
   // Mobile Money payment
   const [mobileProvider, setMobileProvider] = useState<'mtn' | 'airtel'>('mtn');
@@ -309,6 +310,7 @@ const POSPage = () => {
         setCustomerPhone('');
         setCardStep('tap');
         setCardPin('');
+        setCardUid('');
         setGasRewardWalletId('');
 
         // Show receipt
@@ -339,9 +341,10 @@ const POSPage = () => {
 
     switch (paymentMethod) {
       case 'bigshop_card':
-        paymentType = cardWalletType === 'dashboard' ? 'dashboard_wallet' : 'credit_wallet';
+        paymentType = 'nfc';
         paymentDetails = {
-          card_pin: cardPin,
+          uid: cardUid,
+          pin: cardPin,
           wallet_type: cardWalletType,
           gasRewardWalletId: cardWalletType === 'dashboard' ? gasRewardWalletId : undefined,
         };
@@ -742,15 +745,28 @@ const POSPage = () => {
                 <CreditCardOutlined style={{ fontSize: 64, color: '#1890ff', marginBottom: 16 }} />
                 <Title level={4}>Tap Customer Card on Reader</Title>
                 <Text type="secondary">Ask customer to tap their Big Shop Card on the NFC reader</Text>
-                <Button
-                  type="primary"
-                  size="large"
-                  block
-                  style={{ marginTop: 24 }}
-                  onClick={() => setCardStep('pin')}
-                >
-                  Card Detected - Continue
-                </Button>
+                
+                <div style={{ marginTop: 24, maxWidth: 300, margin: '24px auto 0' }}>
+                  <Input 
+                    placeholder="Capture Card UID" 
+                    value={cardUid}
+                    autoFocus
+                    onChange={(e) => setCardUid(e.target.value)}
+                    prefix={<CreditCardOutlined />}
+                    size="large"
+                    style={{ textAlign: 'center' }}
+                  />
+                  <Button
+                    type="primary"
+                    size="large"
+                    block
+                    style={{ marginTop: 16 }}
+                    disabled={!cardUid}
+                    onClick={() => setCardStep('pin')}
+                  >
+                    Continue to PIN
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -834,7 +850,7 @@ const POSPage = () => {
                 </Text>
                 <Input
                   size="large"
-                  placeholder="Gas Reward Wallet ID (GRW-...)"
+                  placeholder="Gas Reward Wallet ID (Phone Number)"
                   value={gasRewardWalletId}
                   onChange={(e) => setGasRewardWalletId(e.target.value)}
                   style={{ textAlign: 'center' }}
@@ -892,7 +908,7 @@ const POSPage = () => {
 
             <Input
               size="large"
-              placeholder="Gas Reward Wallet ID (Optional)"
+              placeholder="Gas Reward Wallet ID (Phone Number - Optional)"
               value={gasRewardWalletId}
               onChange={(e) => setGasRewardWalletId(e.target.value)}
               prefix={<span style={{ color: '#fa541c' }}>🎁</span>}
@@ -916,94 +932,140 @@ const POSPage = () => {
         )}
       </Modal>
 
-      {/* Receipt Modal */}
       <Modal
-        title={
-          <Space>
-            <CheckCircleOutlined style={{ color: '#52c41a' }} />
-            Sale Completed
-          </Space>
-        }
+        title={null} // Cleaner header for modern look
         open={receiptModal}
         onCancel={() => setReceiptModal(false)}
         footer={[
-          <Button key="print" icon={<PrinterOutlined />} onClick={printReceipt}>
+          <Button key="print" type="default" icon={<PrinterOutlined />} onClick={printReceipt} size="large">
             Print Receipt
           </Button>,
-          <Button key="new" type="primary" onClick={() => setReceiptModal(false)}>
+          <Button key="new" type="primary" onClick={() => setReceiptModal(false)} size="large">
             New Sale
           </Button>,
         ]}
-        width={400}
+        width={450}
+        centered
+        closable={false}
       >
         {lastSale && (
-          <div className="receipt" style={{ fontFamily: 'monospace' }}>
-            <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <Title level={4} style={{ margin: 0 }}>BIG Company</Title>
-              <Text type="secondary">Sales Receipt</Text>
+          <div className="modern-receipt-print" style={{ color: '#262626' }}>
+            {/* Header / Branding */}
+            <div style={{ textAlign: 'center', marginBottom: 24 }}>
+              <div style={{ 
+                fontSize: '24px', 
+                fontWeight: 800, 
+                letterSpacing: '-1px',
+                color: '#1890ff',
+                marginBottom: 4
+              }}>
+                BIG COMPANY
+              </div>
+              <div style={{ fontSize: '12px', color: '#8c8c8c', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Official Sales Receipt
+              </div>
             </div>
 
-            <Divider dashed style={{ margin: '12px 0' }} />
-
-            <div style={{ marginBottom: 12 }}>
-              <Text type="secondary">Receipt #:</Text>{' '}
-              <Text strong>{lastSale.receipt_number || lastSale.order_id?.slice(0, 8)}</Text>
-              <br />
-              <Text type="secondary">Date:</Text>{' '}
-              <Text>{new Date().toLocaleString('en-RW')}</Text>
-              <br />
-              <Text type="secondary">Payment:</Text>{' '}
-              <Tag>{lastSale.method?.toUpperCase()}</Tag>
-            </div>
-
-            <Divider dashed style={{ margin: '12px 0' }} />
-
-            {lastSale.items?.map((item: CartItem, index: number) => (
-              <Row key={index} justify="space-between" style={{ marginBottom: 4 }}>
-                <Col span={14}>
-                  <Text>{item.name}</Text>
-                  <br />
-                  <Text type="secondary" style={{ fontSize: '12px' }}>
-                    {item.quantity} x {item.price?.toLocaleString()}
-                  </Text>
-                </Col>
-                <Col span={10} style={{ textAlign: 'right' }}>
-                  <Text>{(item.price * item.quantity).toLocaleString()}</Text>
-                </Col>
+            {/* Meta Details */}
+            <div style={{ 
+              background: '#fafafa', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              marginBottom: 20,
+              fontSize: '13px'
+            }}>
+              <Row justify="space-between" style={{ marginBottom: 4 }}>
+                <Text type="secondary">Receipt No:</Text>
+                <Text strong>{lastSale.receipt_number || lastSale.order_id?.slice(0, 8)}</Text>
               </Row>
-            ))}
-
-            <Divider dashed style={{ margin: '12px 0' }} />
-
-            <Row justify="space-between">
-              <Text>Subtotal:</Text>
-              <Text>{lastSale.subtotal?.toLocaleString()} RWF</Text>
-            </Row>
-            <Row justify="space-between">
-              <Text type="secondary">Tax (18% VAT):</Text>
-              <Text type="secondary">+{lastSale.tax?.toLocaleString()} RWF</Text>
-            </Row>
-            {lastSale.discount > 0 && (
+              <Row justify="space-between" style={{ marginBottom: 4 }}>
+                <Text type="secondary">Date:</Text>
+                <Text>{new Date().toLocaleString('en-RW', { dateStyle: 'medium', timeStyle: 'short' })}</Text>
+              </Row>
               <Row justify="space-between">
-                <Text>Discount:</Text>
-                <Text>-{lastSale.discount?.toLocaleString()} RWF</Text>
+                <Text type="secondary">Payment Method:</Text>
+                <Tag color="blue" style={{ margin: 0, fontSize: '10px' }}>{lastSale.method?.toUpperCase()}</Tag>
               </Row>
-            )}
-            <Row justify="space-between" style={{ marginTop: 8 }}>
-              <Title level={4} style={{ margin: 0 }}>Total:</Title>
-              <Title level={4} style={{ margin: 0 }}>{lastSale.total?.toLocaleString()} RWF</Title>
-            </Row>
+            </div>
+
+            {/* Items Table Header */}
+            <div style={{ padding: '0 4px', marginBottom: 8 }}>
+              <Row style={{ borderBottom: '2px solid #f0f0f0', paddingBottom: 8, fontWeight: 600, fontSize: '12px' }}>
+                <Col span={12}>ITEM DESCRIPTION</Col>
+                <Col span={4} style={{ textAlign: 'center' }}>QTY</Col>
+                <Col span={8} style={{ textAlign: 'right' }}>PRICE</Col>
+              </Row>
+            </div>
+
+            {/* Items List */}
+            <div style={{ marginBottom: 20 }}>
+              {lastSale.items?.map((item: CartItem, index: number) => (
+                <Row key={index} align="middle" style={{ padding: '8px 4px', borderBottom: '1px solid #f9f9f9', fontSize: '14px' }}>
+                  <Col span={12}>
+                    <div style={{ fontWeight: 500 }}>{item.name}</div>
+                    <div style={{ fontSize: '11px', color: '#8c8c8c' }}>Unit: {item.price?.toLocaleString()} RWF</div>
+                  </Col>
+                  <Col span={4} style={{ textAlign: 'center' }}>{item.quantity}</Col>
+                  <Col span={8} style={{ textAlign: 'right', fontWeight: 600 }}>
+                    {(item.price * item.quantity).toLocaleString()}
+                  </Col>
+                </Row>
+              ))}
+            </div>
+
+            {/* Totals Section */}
+            <div style={{ padding: '0 4px' }}>
+              <Row justify="space-between" style={{ marginBottom: 4 }}>
+                <Text type="secondary">Subtotal</Text>
+                <Text>{lastSale.subtotal?.toLocaleString()} RWF</Text>
+              </Row>
+              <Row justify="space-between" style={{ marginBottom: 4 }}>
+                <Text type="secondary">Tax (18% VAT)</Text>
+                <Text>+{lastSale.tax?.toLocaleString()} RWF</Text>
+              </Row>
+              {lastSale.discount > 0 && (
+                <Row justify="space-between" style={{ marginBottom: 4, color: '#f5222d' }}>
+                  <Text style={{ color: 'inherit' }}>Discount</Text>
+                  <Text style={{ color: 'inherit' }}>-{lastSale.discount?.toLocaleString()} RWF</Text>
+                </Row>
+              )}
+              
+              <div style={{ 
+                marginTop: 16, 
+                padding: '16px', 
+                background: '#1890ff', 
+                borderRadius: '12px',
+                color: 'white'
+              }}>
+                <Row justify="space-between" align="middle">
+                  <div style={{ fontSize: '14px', opacity: 0.9 }}>TOTAL AMOUNT</div>
+                  <div style={{ fontSize: '24px', fontWeight: 800 }}>
+                    {lastSale.total?.toLocaleString()} RWF
+                  </div>
+                </Row>
+              </div>
+            </div>
+
+            {/* Rewards Info */}
             {lastSale.gasRewardWalletId && (
-              <Row justify="space-between" style={{ marginTop: 8 }}>
-                <Text type="secondary">Gas Reward Wallet:</Text>
-                <Text type="secondary">{lastSale.gasRewardWalletId}</Text>
-              </Row>
+              <div style={{ 
+                marginTop: 20, 
+                textAlign: 'center', 
+                padding: '8px', 
+                border: '1px dashed #d9d9d9',
+                borderRadius: '8px',
+                fontSize: '12px'
+              }}>
+                <span style={{ color: '#8c8c8c' }}>Rewards linked to: </span>
+                <Text strong style={{ color: '#fa541c' }}>{lastSale.gasRewardWalletId}</Text>
+              </div>
             )}
 
-            <Divider dashed style={{ margin: '12px 0' }} />
-
-            <div style={{ textAlign: 'center' }}>
-              <Text type="secondary">Thank you for shopping!</Text>
+            {/* Footer */}
+            <div style={{ textAlign: 'center', marginTop: 32, paddingBottom: 8 }}>
+              <div style={{ fontWeight: 600, fontSize: '14px', marginBottom: 4 }}>Thank you for shopping!</div>
+              <div style={{ fontSize: '11px', color: '#8c8c8c' }}>Please keep this receipt for your records.</div>
+              <div style={{ fontSize: '10px', color: '#bfbfbf', marginTop: 12 }}>PROCESSED BY BIG INNOVATION POS</div>
             </div>
           </div>
         )}

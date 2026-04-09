@@ -100,7 +100,6 @@ const ConsumerWalletPage: React.FC = () => {
   const [loanModalVisible, setLoanModalVisible] = useState(false);
   const [repayModalVisible, setRepayModalVisible] = useState(false);
   const [linkCardModalVisible, setLinkCardModalVisible] = useState(false);
-  const [topUpCardModalVisible, setTopUpCardModalVisible] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<any>(null);
   const [selectedCard, setSelectedCard] = useState<any>(null);
   
@@ -279,22 +278,6 @@ const ConsumerWalletPage: React.FC = () => {
         }
    };
 
-   const handleTopUpCard = async (values: any) => {
-        try {
-            setLoading(true);
-            await nfcApi.topUpCard(selectedCard.id, {
-                amount: values.amount,
-                pin: values.pin
-            });
-            message.success('Card topped up successfully');
-            setTopUpCardModalVisible(false);
-            loadData();
-        } catch (error: any) {
-            message.error('Failed to top up card');
-        } finally {
-            setLoading(false);
-        }
-   };
 
    const handleUnlinkCard = async (cardId: string) => {
         try {
@@ -401,7 +384,7 @@ const ConsumerWalletPage: React.FC = () => {
                        }}
                        bodyStyle={{ padding: '24px' }}
                    >
-                       <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14 }}>Available Balance</Text>
+                       <Text style={{ color: 'rgba(255,255,255,0.85)', fontSize: 14 }}>Available Linked Wallet Balance</Text>
                        <Title level={1} style={{ color: 'white', margin: '8px 0', fontSize: 36 }}>
                            {(balance?.availableBalance || 0).toLocaleString()} RWF
                        </Title>
@@ -551,7 +534,7 @@ const ConsumerWalletPage: React.FC = () => {
                                                    </div>
                                                    <div style={{ marginTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                                                        <div>
-                                                           <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>Balance</Text>
+                                                           <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>Linked Wallet Balance</Text>
                                                            <div style={{ fontSize: 20, fontWeight: 'bold' }}>{card.balance.toLocaleString()} RWF</div>
                                                        </div>
                                                        <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 10 }}>UID: {card.uid}</Text>
@@ -669,20 +652,9 @@ const ConsumerWalletPage: React.FC = () => {
                </Form>
           </Modal>
 
-          <Modal title="Top Up NFC Card" open={topUpCardModalVisible} onCancel={() => setTopUpCardModalVisible(false)} footer={null}>
-               <Form onFinish={handleTopUpCard} layout="vertical">
-                  <Title level={5}>Card: {selectedCard?.nickname || selectedCard?.uid}</Title>
-                  <Form.Item name="amount" label="Top Up Amount" rules={[{ required: true }]}>
-                      <InputNumber style={{ width: '100%' }} min={100} />
-                  </Form.Item>
-                  <Form.Item name="pin" label="Card PIN" rules={[{ required: true }]}>
-                      <Input.Password maxLength={4} placeholder="4 digit PIN" />
-                  </Form.Item>
-                  <Button type="primary" htmlType="submit" loading={loading} block>Top Up</Button>
-               </Form>
-          </Modal>
       </div>
   );
 };
 
 export default ConsumerWalletPage;
+

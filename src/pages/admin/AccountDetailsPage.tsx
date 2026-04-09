@@ -41,6 +41,7 @@ import {
   HistoryOutlined,
   DollarOutlined,
   IdcardOutlined,
+  TruckOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -117,6 +118,18 @@ const AccountDetailsPage: React.FC = () => {
     }
   };
 
+  const handleConfirmWholesaleDelivery = async (orderId: string) => {
+    try {
+      const response = await adminApi.confirmWholesaleDelivery(orderId);
+      if (response.data.success) {
+        message.success('Wholesale delivery confirmed successfully');
+        fetchAccountDetails();
+      }
+    } catch (error: any) {
+      message.error(error.response?.data?.error || 'Failed to confirm wholesale delivery');
+    }
+  };
+
   const getStatusTag = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
       pending: { color: 'orange', icon: <ClockCircleOutlined /> },
@@ -128,7 +141,8 @@ const AccountDetailsPage: React.FC = () => {
       processing: { color: 'blue', icon: <ClockCircleOutlined /> },
     };
     const config = statusConfig[status?.toLowerCase()] || { color: 'default', icon: null };
-    return <Tag color={config.color} icon={config.icon}>{status?.toUpperCase()}</Tag>;
+    const label = (status?.toLowerCase() === 'confirmed' || status?.toLowerCase() === 'processing') ? 'PROCEED' : status?.toUpperCase();
+    return <Tag color={config.color} icon={config.icon}>{label}</Tag>;
   };
 
   if (loading) {
@@ -437,6 +451,22 @@ const AccountDetailsPage: React.FC = () => {
               { title: 'Amount', dataIndex: 'totalAmount', key: 'amount', render: (v: number) => `${v?.toLocaleString()} RWF` },
               { title: 'Status', dataIndex: 'status', key: 'status', render: getStatusTag },
               { title: 'Date', dataIndex: 'createdAt', key: 'date', render: (d: string) => dayjs(d).format('MMM DD, YYYY') },
+              {
+                title: 'Actions',
+                key: 'actions',
+                render: (_: any, record: any) => (
+                  (record.status === 'shipped' || record.status === 'processing') && (
+                    <Button 
+                      size="small" 
+                      type="primary" 
+                      icon={<CheckCircleOutlined />}
+                      onClick={() => handleConfirmWholesaleDelivery(record.id)}
+                    >
+                      Confirm Delivery
+                    </Button>
+                  )
+                )
+              }
             ]}
             pagination={{ pageSize: 5 }}
           />
@@ -659,6 +689,22 @@ const AccountDetailsPage: React.FC = () => {
               { title: 'Amount', dataIndex: 'totalAmount', key: 'amount', render: (v: number) => `${v?.toLocaleString()} RWF` },
               { title: 'Status', dataIndex: 'status', key: 'status', render: getStatusTag },
               { title: 'Date', dataIndex: 'createdAt', key: 'date', render: (d: string) => dayjs(d).format('MMM DD, YYYY') },
+              {
+                title: 'Actions',
+                key: 'actions',
+                render: (_: any, record: any) => (
+                  (record.status === 'shipped' || record.status === 'processing') && (
+                    <Button 
+                      size="small" 
+                      type="primary" 
+                      icon={<CheckCircleOutlined />}
+                      onClick={() => handleConfirmWholesaleDelivery(record.id)}
+                    >
+                      Confirm Delivery
+                    </Button>
+                  )
+                )
+              }
             ]}
             pagination={{ pageSize: 5 }}
           />

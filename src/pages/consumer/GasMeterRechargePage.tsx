@@ -89,6 +89,9 @@ const GasMeterRechargePage: React.FC = () => {
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const [customAmount, setCustomAmount] = useState<string>('');
     const [pipingMode, setPipingMode] = useState<'ORDINARY' | 'TOKEN_PUSH'>('ORDINARY');
+    const [selectionMode, setSelectionMode] = useState<'money' | 'units'>('money');
+    const [unitAmount, setUnitAmount] = useState<string>('');
+    const GAS_PRICE_RATE = 1500; // System standard
 
     useEffect(() => {
         loadInitialData();
@@ -147,18 +150,22 @@ const GasMeterRechargePage: React.FC = () => {
     // LoRaWAN-based recharge function removed per requirement to completely disable LoRaWAN recharge logic from frontend.
 
     const getEffectiveAmount = (): number => {
+        if (selectionMode === 'units') return Number(unitAmount) || 0;
         return selectedAmount ?? (Number(customAmount) || 0);
+    };
+
+    const calculateCost = (): number => {
+        const amt = getEffectiveAmount();
+        return selectionMode === 'units' ? amt * GAS_PRICE_RATE : amt;
     };
 
     const handleSubmit = async (values: any) => {
         const amount = getEffectiveAmount();
+        const cost = calculateCost();
         const isPushToken = meterType === 'GPRS' && !!values.pipingToken;
 
-        // Money amount is chosen directly now
-        const cost = isPushToken ? 0 : amount;
-
-        if (!isPushToken && amount < 1) {
-            message.error('Minimum recharge amount is 1 RWF.');
+        if (!isPushToken && amount <= 0) {
+            message.error(`Please enter a valid ${selectionMode === 'units' ? 'quantity' : 'amount'}.`);
             return;
         }
 
@@ -180,6 +187,7 @@ const GasMeterRechargePage: React.FC = () => {
                 meterNumber: values.meterNumber?.trim(),
                 meterType: 'TOKEN' as 'TOKEN' | 'PIPING',
                 amount: amount,
+                isVendByUnit: selectionMode === 'units',
                 paymentMethod,
                 phone: values.phone,
                 cardId: values.cardId,
@@ -203,7 +211,7 @@ const GasMeterRechargePage: React.FC = () => {
                 message.success('Gas meter recharged successfully!');
                 await loadHistory();
                 if (paymentMethod === 'wallet') {
-                    setWalletBalance((prev) => prev - amount);
+                    setWalletBalance((prev) => prev - cost);
                 }
             }
         } catch (err: any) {
@@ -219,6 +227,7 @@ const GasMeterRechargePage: React.FC = () => {
         setCurrentStep(0);
         setSelectedAmount(null);
         setCustomAmount('');
+        setUnitAmount('');
         form.resetFields();
     };
 
@@ -541,56 +550,92 @@ const GasMeterRechargePage: React.FC = () => {
                                     </div>
                                 )}
 
-                                {/* Amount Selection - Money Based */}
-                                <Form.Item
-                                    label={<Text strong>Recharge Amount (RWF)</Text>}
-                                    help={<Text type="secondary" style={{ fontSize: 11 }}>Choose or enter amount in RWF. Conversion to m³ will be done based on current rates.</Text>}
-                                >
-                                    <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
-                                        {PREDEFINED_AMOUNTS.map((amt) => (
-                                            <Col span={8} key={amt}>
-                                                <div
-                                                    onClick={() => {
-                                                        setSelectedAmount(amt);
-                                                        setCustomAmount('');
-                                                    }}
-                                                    style={{
-                                                        border: `2px solid ${selectedAmount === amt ? '#ff6b35' : '#e8e8e8'}`,
-                                                        borderRadius: 8,
-                                                        padding: '10px 4px',
-                                                        cursor: 'pointer',
-                                                        textAlign: 'center',
-                                                        background: selectedAmount === amt ? '#fff7f0' : '#fff',
-                                                        transition: 'all 0.2s',
-                                                    }}
-                                                >
-                                                    <Text
-                                                        strong
+                                {/* Amount & Unit Selection */}
+                                <Form.Item label={<Text strong>Choose Recharge Mode</Text>}>
+                                    <Radio.Group 
+                                        value={selectionMode} 
+                                        onChange={(e) => {
+                                            setSelectionMode(e.target.value);
+                                            setSelectedAmount(null);
+                                            setCustomAmount('');
+                                            setUnitAmount('');
+                                        }}
+                                        optionType="button"
+                                        buttonStyle="solid"
+                                    >
+                                        <Radio.Button value="money">Money (RWF)</Radio.Button>
+                                        <Radio.Button value="units">Volume (m³)</Radio.Button>
+                                    </Radio.Group>
+                                </Form.Item>
+
+                                {selectionMode === 'money' ? (
+                                    <Form.Item
+                                        label={<Text strong>Recharge Amount (RWF)</Text>}
+                                        help={customAmount || selectedAmount ? (
+                                            <Text type="success" style={{ fontSize: 13, fontWeight: 600 }}>
+                                                ≈ {((selectedAmount || Number(customAmount) || 0) / GAS_PRICE_RATE).toFixed(4)} m³ of Gas
+                                            </Text>
+                                        ) : <Text type="secondary" style={{ fontSize: 11 }}>Choose or enter amount in RWF</Text>}
+                                    >
+                                        <Row gutter={[8, 8]} style={{ marginBottom: 12 }}>
+                                            {PREDEFINED_AMOUNTS.map((amt) => (
+                                                <Col span={8} key={amt}>
+                                                    <div
+                                                        onClick={() => {
+                                                            setSelectedAmount(amt);
+                                                            setCustomAmount('');
+                                                        }}
                                                         style={{
-                                                            color: selectedAmount === amt ? '#ff6b35' : '#333',
-                                                            fontSize: 13,
+                                                            border: `2px solid ${selectedAmount === amt ? '#ff6b35' : '#e8e8e8'}`,
+                                                            borderRadius: 8,
+                                                            padding: '10px 4px',
+                                                            cursor: 'pointer',
+                                                            textAlign: 'center',
+                                                            background: selectedAmount === amt ? '#fff7f0' : '#fff',
+                                                            transition: 'all 0.2s',
                                                         }}
                                                     >
-                                                        {amt.toLocaleString()} RWF
-                                                    </Text>
-                                                </div>
-                                            </Col>
-                                        ))}
-                                    </Row>
-                                    <Input
-                                        prefix="RWF"
-                                        placeholder="Or enter custom amount (e.g. 500)"
-                                        value={customAmount}
-                                        size="large"
-                                        style={{ borderRadius: 8 }}
-                                        onChange={(e) => {
-                                                            setCustomAmount(e.target.value);
-                                                            setSelectedAmount(null);
-                                        }}
-                                        type="number"
-                                        min={100}
-                                    />
-                                </Form.Item>
+                                                        <Text strong style={{ color: selectedAmount === amt ? '#ff6b35' : '#333', fontSize: 13 }}>
+                                                            {amt.toLocaleString()} RWF
+                                                        </Text>
+                                                    </div>
+                                                </Col>
+                                            ))}
+                                        </Row>
+                                        <Input
+                                            prefix="RWF"
+                                            placeholder="Enter amount (e.g. 500)"
+                                            value={customAmount}
+                                            size="large"
+                                            style={{ borderRadius: 8 }}
+                                            onChange={(e) => setCustomAmount(e.target.value)}
+                                            type="number"
+                                            min={100}
+                                        />
+                                    </Form.Item>
+                                ) : (
+                                    <Form.Item
+                                        label={<Text strong>Gas Quantity (m³)</Text>}
+                                        help={unitAmount ? (
+                                            <Text type="success" style={{ fontSize: 13, fontWeight: 600 }}>
+                                                Cost: {(Number(unitAmount) * GAS_PRICE_RATE).toLocaleString()} RWF
+                                            </Text>
+                                        ) : <Text type="secondary" style={{ fontSize: 11 }}>Enter exactly how much Gas you want to buy</Text>}
+                                    >
+                                        <Input
+                                            prefix={<ThunderboltOutlined style={{ color: '#52c41a' }} />}
+                                            suffix={<Text strong type="secondary">Cubic Meters (m³)</Text>}
+                                            placeholder="e.g. 0.2 or 1.5"
+                                            value={unitAmount}
+                                            size="large"
+                                            style={{ borderRadius: 8 }}
+                                            onChange={(e) => setUnitAmount(e.target.value)}
+                                            type="number"
+                                            step="0.01"
+                                            min={0.01}
+                                        />
+                                    </Form.Item>
+                                )}
 
 
 
@@ -729,7 +774,7 @@ const GasMeterRechargePage: React.FC = () => {
                                         { label: 'Meter Number', value: result.meterNumber },
                                         { label: 'Meter Type', value: result.meterType === 'TOKEN' ? '⚡ Token-Based' : '🔧 Piping Gas' },
                                         { label: 'Amount Paid', value: `${result.amount.toLocaleString()} RWF` },
-                                        { label: 'Gas Units', value: result.units ? `${result.units} ${result.meterType === 'TOKEN' ? 'kg' : 'm³'}` : 'N/A' },
+                                        { label: 'Gas Units', value: result.units ? `${result.units} m³` : 'N/A' },
                                         ...(result.apiReference ? [{ label: 'API Reference', value: result.apiReference }] : []),
                                     ].map((item) => (
                                         <Col span={12} key={item.label}>

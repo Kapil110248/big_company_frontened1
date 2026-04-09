@@ -257,13 +257,16 @@ export const WalletPage = () => {
   };
 
   const [isAddCapitalModalVisible, setIsAddCapitalModalVisible] = useState(false);
+  const [addCapitalForm] = Form.useForm();
+  const selectedSource = Form.useWatch('source', addCapitalForm);
 
   const handleAddCapital = async (values: any) => {
     setProcessing(true);
     try {
-      await retailerApi.topUpWallet(values.amount, values.source);
+      await retailerApi.topUpWallet(values.amount, values.source, values.phone);
       message.success('Capital added successfully');
       setIsAddCapitalModalVisible(false);
+      addCapitalForm.resetFields();
       fetchWalletData(true);
     } catch (error: any) {
       console.error(error);
@@ -569,10 +572,18 @@ export const WalletPage = () => {
           <Modal
             title="Add Capital to Wallet"
             open={isAddCapitalModalVisible}
-            onCancel={() => setIsAddCapitalModalVisible(false)}
+            onCancel={() => {
+              setIsAddCapitalModalVisible(false);
+              addCapitalForm.resetFields();
+            }}
             footer={null}
           >
-            <Form layout="vertical" onFinish={handleAddCapital}>
+            <Form 
+              form={addCapitalForm} 
+              layout="vertical" 
+              onFinish={handleAddCapital}
+              initialValues={{ source: 'mobile_money' }}
+            >
               <Form.Item
                 name="amount"
                 label="Amount (RWF)"
@@ -588,7 +599,6 @@ export const WalletPage = () => {
               <Form.Item
                 name="source"
                 label="Source"
-                initialValue="mobile_money"
               >
                 <Select>
                   <Option value="mobile_money">Mobile Money</Option>
@@ -596,6 +606,23 @@ export const WalletPage = () => {
                   <Option value="cash">Cash Agent</Option>
                 </Select>
               </Form.Item>
+
+              {selectedSource === 'mobile_money' && (
+                <Form.Item
+                  name="phone"
+                  label="Mobile Money Phone Number"
+                  rules={[
+                    { required: true, message: 'Please enter phone number' },
+                    { pattern: /^[0-9]+$/, message: 'Please enter a valid phone number' }
+                  ]}
+                >
+                  <Input 
+                    placeholder="Enter MoMo number (e.g. 078XXXXXXX)" 
+                    prefix={<PhoneOutlined />} 
+                  />
+                </Form.Item>
+              )}
+
               <Form.Item>
                 <Button type="primary" htmlType="submit" loading={processing} block>
                   Add Capital
@@ -614,7 +641,7 @@ export const WalletPage = () => {
 
           {/* Transaction History */}
           <Card
-            title={<><HistoryOutlined /> Wholesaler Orders History</>}
+            title={<><HistoryOutlined /> Wallet Transaction History</>}
             extra={
               <Button 
                 size="small" 
@@ -944,7 +971,6 @@ export const WalletPage = () => {
                   type="primary"
                   icon={<PlusOutlined />}
                   onClick={() => setRequestCreditModal(true)}
-                  disabled={(creditInfo?.credit_available || 0) <= 0}
                 >
                   Request Credit
                 </Button>
@@ -1198,8 +1224,7 @@ export const WalletPage = () => {
           <Form.Item label="Credit Amount (RWF)" required>
             <InputNumber
               style={{ width: '100%' }}
-              min={1000}
-              max={creditInfo?.credit_available || 0}
+              min={100}
               value={requestAmount}
               onChange={(v) => setRequestAmount(v || 0)}
               formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}

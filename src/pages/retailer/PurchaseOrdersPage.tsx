@@ -52,6 +52,11 @@ interface PurchaseOrder {
   created_at: string;
   items_count: number;
   items?: PurchaseOrderItem[];
+  shipper_name?: string;
+  shipper_phone?: string;
+  vehicle_plate?: string;
+  rejection_reason?: string;
+  cancellation_reason?: string;
 }
 
 const statusColors: Record<string, string> = {
@@ -130,6 +135,25 @@ export const PurchaseOrdersPage = () => {
       setViewModal({ visible: false, order: null });
     } finally {
       setViewLoading(false);
+    }
+  };
+
+  const [confirming, setConfirming] = useState(false);
+
+  const handleConfirmDelivery = async (orderId: number) => {
+    setConfirming(true);
+    try {
+      await retailerApi.confirmPurchaseOrder(orderId.toString());
+      message.success('Order marked as delivered');
+      // Reload order detail to show new status
+      loadOrderDetail(orderId);
+      // Reload the list too
+      loadOrders(true);
+    } catch (error: any) {
+      console.error('Failed to confirm delivery:', error);
+      message.error(error.response?.data?.error || 'Failed to confirm delivery');
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -259,7 +283,18 @@ export const PurchaseOrdersPage = () => {
         footer={[
           <Button key="close" onClick={() => setViewModal({ visible: false, order: null })}>
             Close
-          </Button>
+          </Button>,
+          (viewModal.order?.status === 'shipped' || viewModal.order?.status === 'confirmed' || viewModal.order?.status === 'processing') && (
+            <Button 
+              key="confirm" 
+              type="primary" 
+              icon={<CheckCircleOutlined />}
+              onClick={() => handleConfirmDelivery(viewModal.order!.id)}
+              loading={confirming}
+            >
+              Confirm Delivery
+            </Button>
+          )
         ]}
         width={800}
       >
@@ -277,9 +312,23 @@ export const PurchaseOrdersPage = () => {
                   <Descriptions.Item label="Payment">{paymentLabels[viewModal.order.payment_method] || viewModal.order.payment_method}</Descriptions.Item>
                   <Descriptions.Item label="Status">
                     <Tag color={statusColors[viewModal.order.status] || 'default'}>
-                      {viewModal.order.status.toUpperCase()}
+                      {viewModal.order.status.toUpperCase() === 'CONFIRMED' ? 'PROCEED' : viewModal.order.status.toUpperCase().replace('_', ' ')}
                     </Tag>
                   </Descriptions.Item>
+                  {viewModal.order.shipper_name && (
+                    <Descriptions.Item label="Shipper Name">{viewModal.order.shipper_name}</Descriptions.Item>
+                  )}
+                  {viewModal.order.shipper_phone && (
+                    <Descriptions.Item label="Shipper Phone">{viewModal.order.shipper_phone}</Descriptions.Item>
+                  )}
+                  {viewModal.order.vehicle_plate && (
+                    <Descriptions.Item label="Vehicle Plate">{viewModal.order.vehicle_plate}</Descriptions.Item>
+                  )}
+                  {viewModal.order.rejection_reason && (
+                    <Descriptions.Item label="Rejection Reason">
+                      <Text type="danger">{viewModal.order.rejection_reason}</Text>
+                    </Descriptions.Item>
+                  )}
                 </Descriptions>
               </Col>
               <Col span={12}>

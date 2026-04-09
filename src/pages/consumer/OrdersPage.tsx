@@ -69,7 +69,7 @@ interface Shipper {
 interface Order {
   id: string;
   order_number: string;
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'rejected';
   retailer: {
     id: string;
     name: string;
@@ -86,24 +86,35 @@ interface Order {
   updated_at: string;
   estimated_delivery?: string;
   packager?: Packager;
-  shipper?: Shipper;
   cancellation_reason?: string;
   rejection_reason?: string;
   cancelled_by?: 'customer' | 'retailer';
   payment_method?: string;
   meter_id?: string;
+  shipperName?: string;
+  shipperPhone?: string;
+  vehiclePlate?: string;
 }
 
 const statusColors: Record<string, string> = {
   pending: 'gold',
-  confirmed: 'blue',
+  confirmed: 'cyan',
   processing: 'cyan',
   shipped: 'purple',
   delivered: 'green',
   cancelled: 'red',
 };
 
-const statusSteps = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+const statusLabels: Record<string, string> = {
+  pending: 'PENDING',
+  confirmed: 'PROCEED',
+  processing: 'PROCEED',
+  shipped: 'SHIPPED',
+  delivered: 'DELIVERED',
+  cancelled: 'CANCELLED',
+};
+
+const statusSteps = ['pending', 'confirmed', 'shipped', 'delivered'];
 
 const cancelReasons = [
   'Changed my mind',
@@ -173,7 +184,9 @@ export const OrdersPage: React.FC = () => {
 
   const getStatusStep = (status: string) => {
     if (status === 'cancelled') return -1;
-    return statusSteps.indexOf(status);
+    // Map processing to confirmed step
+    const currentStatus = status === 'processing' ? 'confirmed' : status;
+    return statusSteps.indexOf(currentStatus);
   };
 
   const canCancelOrder = (order: Order | null) => {
@@ -388,7 +401,7 @@ export const OrdersPage: React.FC = () => {
                   <Space direction="vertical" size={4}>
                     <Space>
                       <Tag color={statusColors[order.status] || 'default'} style={{ marginRight: 0 }}>
-                        {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || 'Unknown'}
+                        {statusLabels[order.status] || order.status?.toUpperCase() || 'Unknown'}
                       </Tag>
                       {getPaymentMethodBadge(order.payment_method)}
                     </Space>
@@ -458,8 +471,7 @@ export const OrdersPage: React.FC = () => {
                     size="small"
                     items={[
                       { title: 'Pending', icon: <ClockCircleOutlined /> },
-                      { title: 'Confirmed', icon: <CheckCircleOutlined /> },
-                      { title: 'Processing', icon: <ShoppingOutlined /> },
+                      { title: 'Proceed', icon: <CheckCircleOutlined /> },
                       { title: 'Shipped', icon: <CarOutlined /> },
                       { title: 'Delivered', icon: <CheckCircleOutlined /> },
                     ]}
@@ -524,7 +536,7 @@ export const OrdersPage: React.FC = () => {
                   <Text type="secondary">Order Status</Text>
                   <br />
                   <Tag color={statusColors[selectedOrder.status]} style={{ marginTop: 4 }}>
-                    {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                    {statusLabels[selectedOrder.status] || selectedOrder.status.toUpperCase()}
                   </Tag>
                 </Col>
                 <Col span={12}>
@@ -575,20 +587,18 @@ export const OrdersPage: React.FC = () => {
                     </Text>
                   </Timeline.Item>
                 )}
-                {selectedOrder.shipper && (
+                {selectedOrder.shipperName && (
                   <Timeline.Item color="purple">
                     <Text strong>Order Shipped</Text>
                     <br />
                     <Space direction="vertical" size={2}>
                       <Text type="secondary" style={{ fontSize: 12 }}>
-                        {selectedOrder.shipper.shipped_at
-                          ? formatDate(selectedOrder.shipper.shipped_at)
-                          : 'In transit'}
+                        {'In transit'}
                       </Text>
                       <Descriptions size="small" column={1} bordered={false}>
-                        <Descriptions.Item label="Shipper">{selectedOrder.shipper.name}</Descriptions.Item>
-                        <Descriptions.Item label="Phone">{selectedOrder.shipper.phone}</Descriptions.Item>
-                        <Descriptions.Item label="Plate No.">{selectedOrder.shipper.plate_number || 'N/A'}</Descriptions.Item>
+                        <Descriptions.Item label="Shipper">{selectedOrder.shipperName}</Descriptions.Item>
+                        <Descriptions.Item label="Phone">{selectedOrder.shipperPhone}</Descriptions.Item>
+                        <Descriptions.Item label="Plate No.">{selectedOrder.vehiclePlate || 'N/A'}</Descriptions.Item>
                       </Descriptions>
                     </Space>
                   </Timeline.Item>
@@ -666,7 +676,7 @@ export const OrdersPage: React.FC = () => {
             )}
 
             {/* Shipper Info */}
-            {selectedOrder.shipper && (
+            {selectedOrder.shipperName && (
               <Card
                 title={
                   <>
@@ -679,18 +689,18 @@ export const OrdersPage: React.FC = () => {
               >
                 <Descriptions size="small" column={1}>
                   <Descriptions.Item label="Name">
-                    <Text strong>{selectedOrder.shipper.name}</Text>
+                    <Text strong>{selectedOrder.shipperName}</Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Phone">
                     <Space size={4}>
                       <PhoneOutlined style={{ color: '#999' }} />
-                      <Text>{selectedOrder.shipper.phone}</Text>
+                      <Text>{selectedOrder.shipperPhone}</Text>
                     </Space>
                   </Descriptions.Item>
                   <Descriptions.Item label="Vehicle">
                     <Space size={4}>
                       <CarOutlined style={{ color: '#999' }} />
-                      <Text>{selectedOrder.shipper.vehicle}</Text>
+                      <Text>{selectedOrder.vehiclePlate}</Text>
                     </Space>
                   </Descriptions.Item>
                 </Descriptions>
@@ -906,7 +916,7 @@ export const OrdersPage: React.FC = () => {
               </Descriptions.Item>
               <Descriptions.Item label="Status">
                 <Tag color={statusColors[selectedOrder.status]}>
-                  {selectedOrder.status.toUpperCase()}
+                  {(statusLabels[selectedOrder.status] || selectedOrder.status).toUpperCase()}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Payment Method" span={2}>

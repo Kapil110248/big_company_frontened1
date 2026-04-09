@@ -101,6 +101,16 @@ const statusColors: Record<string, string> = {
   rejected: 'red',
 };
 
+const statusLabels: Record<string, string> = {
+  pending: 'PENDING',
+  confirmed: 'PROCEED',
+  processing: 'PROCEED',
+  shipped: 'SHIPPED',
+  delivered: 'DELIVERED',
+  cancelled: 'CANCELLED',
+  rejected: 'REJECTED',
+};
+
 const paymentTypeColors: Record<string, string> = {
   credit: 'orange',
   bank_transfer: 'blue',
@@ -230,7 +240,14 @@ const OrdersPage = () => {
     try {
       const values = await form.validateFields();
       setActionLoading(true);
-      await wholesalerApi.shipOrder(String(selectedOrder.id), values.tracking_number, values.delivery_notes);
+      await wholesalerApi.shipOrder(
+        String(selectedOrder.id),
+        values.shipper_name,
+        values.shipper_phone,
+        values.vehicle_plate,
+        values.tracking_number,
+        values.delivery_notes
+      );
       message.success(`Order ${selectedOrder.orderNumber || selectedOrder.id} marked as shipped`);
       setShipModalOpen(false);
       setSelectedOrder(null);
@@ -358,7 +375,7 @@ const OrdersPage = () => {
       key: 'status',
       render: (value: string) => (
         <Tag color={statusColors[value] || 'default'}>
-          {value?.toUpperCase()}
+          {statusLabels[value] || value?.toUpperCase()}
         </Tag>
       ),
     },
@@ -391,7 +408,7 @@ const OrdersPage = () => {
                   setConfirmModalOpen(true);
                 }}
               >
-                Confirm
+                Accept
               </Button>
               <Button
                 danger
@@ -420,14 +437,7 @@ const OrdersPage = () => {
             </Button>
           )}
           {record.status === 'shipped' && (
-            <Button
-              type="primary"
-              size="small"
-              style={{ backgroundColor: '#22c55e', borderColor: '#22c55e' }}
-              onClick={() => handleDeliverOrder(record)}
-            >
-              Delivered
-            </Button>
+            <Tag color="purple">WAITING DELIVERY</Tag>
           )}
         </Space>
       ),
@@ -573,7 +583,7 @@ const OrdersPage = () => {
 
       {/* Confirm Modal */}
       <Modal
-        title={`Confirm Order ${selectedOrder?.orderNumber}`}
+        title={`Accept Order ${selectedOrder?.orderNumber}`}
         open={confirmModalOpen}
         onCancel={() => {
           setConfirmModalOpen(false);
@@ -581,9 +591,9 @@ const OrdersPage = () => {
         }}
         onOk={handleConfirmOrder}
         confirmLoading={actionLoading}
-        okText="Confirm Order"
+        okText="Accept Order"
       >
-        <p>Are you sure you want to confirm this order?</p>
+        <p>Are you sure you want to accept this order?</p>
         {selectedOrder && (() => {
           const retailer = getRetailerInfo(selectedOrder);
           return (
@@ -641,6 +651,27 @@ const OrdersPage = () => {
       >
         <Form form={form} layout="vertical">
           <Form.Item
+            name="shipper_name"
+            label="Shipper Name"
+            rules={[{ required: true, message: 'Please enter shipper name' }]}
+          >
+            <Input placeholder="Enter driver/shipper name..." />
+          </Form.Item>
+          <Form.Item
+            name="shipper_phone"
+            label="Shipper Phone"
+            rules={[{ required: true, message: 'Please enter shipper phone number' }]}
+          >
+            <Input placeholder="Enter shipper phone number..." />
+          </Form.Item>
+          <Form.Item
+            name="vehicle_plate"
+            label="Vehicle Plate Number"
+            rules={[{ required: true, message: 'Please enter vehicle plate number' }]}
+          >
+            <Input placeholder="Enter vehicle plate (e.g., RAA 123A)..." />
+          </Form.Item>
+          <Form.Item
             name="tracking_number"
             label="Tracking Number"
           >
@@ -677,7 +708,7 @@ const OrdersPage = () => {
                 setConfirmModalOpen(true);
               }}
             >
-              Confirm Order
+              Accept Order
             </Button>
           ),
           (selectedOrder?.status === 'confirmed' || selectedOrder?.status === 'processing') && (
@@ -692,19 +723,6 @@ const OrdersPage = () => {
               Ship Order
             </Button>
           ),
-          selectedOrder?.status === 'shipped' && (
-            <Button
-              key="deliver"
-              type="primary"
-              style={{ backgroundColor: '#22c55e', borderColor: '#22c55e' }}
-              onClick={() => {
-                if (selectedOrder) handleDeliverOrder(selectedOrder);
-                setDetailModalOpen(false);
-              }}
-            >
-              Confirm Delivery
-            </Button>
-          ),
         ].filter(Boolean)}
       >
         {selectedOrder && (() => {
@@ -717,7 +735,7 @@ const OrdersPage = () => {
                   style={{ marginBottom: '24px' }}
                   items={[
                     { title: 'Pending', icon: <ClockCircleOutlined /> },
-                    { title: 'Processing', icon: <ShoppingCartOutlined /> },
+                    { title: 'Proceed', icon: <ShoppingCartOutlined /> },
                     { title: 'Shipped', icon: <CarOutlined /> },
                     { title: 'Delivered', icon: <CheckCircleOutlined /> },
                   ]}
@@ -732,7 +750,7 @@ const OrdersPage = () => {
                         <Text code>{selectedOrder.orderNumber}</Text>
                       </Descriptions.Item>
                       <Descriptions.Item label="Status">
-                        <Tag color={statusColors[selectedOrder.status]}>{selectedOrder.status?.toUpperCase()}</Tag>
+                        <Tag color={statusColors[selectedOrder.status]}>{statusLabels[selectedOrder.status] || selectedOrder.status?.toUpperCase()}</Tag>
                       </Descriptions.Item>
                       <Descriptions.Item label="Retailer">{retailer.shopName || retailer.user?.name || 'N/A'}</Descriptions.Item>
                       <Descriptions.Item label="Phone">{retailer.user?.phone || 'N/A'}</Descriptions.Item>

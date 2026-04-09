@@ -110,69 +110,73 @@ export const RewardsPage: React.FC = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [balanceRes, historyRes, referralRes, leaderboardRes] = await Promise.all([
-        consumerApi.getRewardsBalance(),
-        consumerApi.getRewardsHistory(20),
-        consumerApi.getReferralCode(),
-        consumerApi.getLeaderboard('month'),
-      ]);
+      // 1. Fetch Balance
+      try {
+        const balanceRes = await consumerApi.getRewardsBalance();
+        if (balanceRes.data.success) {
+          const totalUnits = balanceRes.data.data.total_units || 0;
+          setBalance({
+            points: Math.round(totalUnits * 100),
+            lifetime_points: Math.round(totalUnits * 100),
+          });
+        }
+      } catch (e) { console.error('Balance fetch failed', e); }
 
-      // Transform balance: backend returns units (m³), frontend uses points (100 points = 1 m³)
-      if (balanceRes.data.success) {
-        const totalUnits = balanceRes.data.data.total_units || 0;
-        setBalance({
-          points: Math.round(totalUnits * 100), // Convert m³ to points
-          lifetime_points: Math.round(totalUnits * 100), // For now, same as current
-        });
-      }
+      // 2. Fetch History
+      try {
+        const historyRes = await consumerApi.getRewardsHistory(50); // Increased limit
+        if (historyRes.data.success && historyRes.data.data.transactions) {
+          const transformedTransactions: RewardTransaction[] = historyRes.data.data.transactions.map((item: any) => {
+            // Mapping backend types to frontend display types
+            let fType = item.type || 'earned';
+            if (item.type === 'purchase_reward' || item.type === 'purchase') fType = 'purchase';
+            if (item.type === 'sent' || item.type === 'redemption') fType = 'sent';
+            
+            return {
+              id: item.id.toString(),
+              type: fType,
+              points: Math.abs(item.points || 0),
+              description: item.description || 'Gas reward',
+              created_at: item.created_at || new Date().toISOString(),
+              meter_id: item.meter_id,
+              order_amount: item.order_amount,
+              order_id: item.order_id,
+              metadata: item.metadata
+            };
+          });
+          setTransactions(transformedTransactions);
+        }
+      } catch (e) { console.error('History fetch failed', e); }
 
-      // Transform history: map units to points and add metadata
-      if (historyRes.data.success && historyRes.data.data.transactions) {
-        const transformedTransactions: RewardTransaction[] = historyRes.data.data.transactions.map((item: any) => {
-          return {
-            id: item.id,
-            type: item.type || 'earned',
-            points: item.points || 0, // Keep original sign
-            description: item.description || 'Gas reward',
-            created_at: item.created_at,
-            meter_id: item.meter_id,
-            order_amount: item.order_amount,
-            order_id: item.order_id,
-            metadata: item.metadata
-          };
-        });
-        setTransactions(transformedTransactions);
-      }
+      // 3. Fetch Referral
+      try {
+        const referralRes = await consumerApi.getReferralCode();
+        if (referralRes.data.success) {
+          setReferralCode(referralRes.data.data.referral_code);
+        }
+      } catch (e) { console.error('Referral fetch failed', e); }
 
-      // Referral code
-      if (referralRes.data.success) {
-        setReferralCode(referralRes.data.data.referral_code);
-      }
+      // 4. Fetch Leaderboard
+      try {
+        const leaderboardRes = await consumerApi.getLeaderboard('month');
+        if (leaderboardRes.data.success) {
+          const userId = localStorage.getItem('bigcompany_user');
+          const currentUserId = userId ? JSON.parse(userId).id : null;
 
-      // Transform leaderboard: map units to points
-      if (leaderboardRes.data.success) {
-        const userId = localStorage.getItem('bigcompany_user');
-        const currentUserName = userId ? JSON.parse(userId).name : '';
+          const transformedLeaderboard: LeaderboardEntry[] = leaderboardRes.data.data.leaderboard.map((item: any, index: number) => ({
+            rank: item.rank || index + 1,
+            name: item.name,
+            points: item.points,
+            tier: item.tier,
+            is_current_user: item.userId === currentUserId || item.is_current_user,
+          }));
+          setLeaderboard(transformedLeaderboard);
+        }
+      } catch (e) { console.error('Leaderboard fetch failed', e); }
 
-        const transformedLeaderboard: LeaderboardEntry[] = leaderboardRes.data.data.map((item: any, index: number) => ({
-          rank: item.rank || index + 1,
-          name: item.customer_name,
-          points: Math.round(item.total_units * 100), // Convert m³ to points
-          tier: item.total_units > 100 ? 'PLATINUM' :
-            item.total_units > 50 ? 'GOLD' :
-              item.total_units > 20 ? 'SILVER' : 'BRONZE',
-          is_current_user: item.customer_name === currentUserName,
-        }));
-        setLeaderboard(transformedLeaderboard);
-      }
     } catch (error) {
       console.error('Failed to fetch rewards data:', error);
-      message.error('Failed to load rewards data');
-      // Set empty states on error
-      setBalance({ points: 0, lifetime_points: 0 });
-      setTransactions([]);
-      setReferralCode('BIG' + Math.random().toString(36).substr(2, 6).toUpperCase());
-      setLeaderboard([]);
+      message.error('Failed to load some rewards data');
     } finally {
       setLoading(false);
     }
@@ -291,26 +295,14 @@ export const RewardsPage: React.FC = () => {
       dataIndex: 'points',
       key: 'points',
       render: (points: number, record: RewardTransaction) => {
-        const isPositive = ['earned', 'bonus', 'referral', 'refund'].includes(record.type) || (record.type as any) === 'sent' ? false : true;
-        // Logic fix: Sent = negative. Earned = positive.
-        // My transform logic in fetchData: points = abs(units)*100.
-        // And isPositive = units > 0.
-        // So I should just check if units > 0 from raw data... but I don't have raw here. I have points (positive).
-        // Wait, I should rely on 'type'.
-        // Backend types: 'purchase', 'redemption', 'bonus', 'referral', 'sent'.
-        // My frontend types: 'earned', 'redeemed', 'expired', 'bonus', 'referral'.
-        // I need to add 'sent' to frontend types.
-        return null; // Logic is handled in render below
+        const isPositive = ['earned', 'bonus', 'referral', 'purchase'].includes(record.type);
+        const gasAmount = (points * 0.01).toFixed(2);
+        return (
+          <Text strong style={{ color: isPositive ? '#52c41a' : '#ff4d4f' }}>
+            {isPositive ? '+' : '-'} {gasAmount} M³
+          </Text>
+        );
       },
-      // ... I'll use the existing render logic which was:
-      // render: (points: number, record: RewardTransaction) => {
-      //   const isPositive = ['earned', 'bonus', 'referral'].includes(record.type);
-      //   // ...
-      // }
-      // I need to ensure 'sent' is handled as negative.
-      // But fetchData maps 'sent' to... what?
-      // "item.source === 'redemption' ? 'redeemed' ..."
-      // I need to update fetchData mapping too.
     },
     {
       title: 'Order ID',
@@ -342,7 +334,7 @@ export const RewardsPage: React.FC = () => {
     transactionColumns[0],
     transactionColumns[1],
     transactionColumns[2],
-    { ...transactionColumns[3], render: renderAmount },
+    transactionColumns[3],
     transactionColumns[4]
   ];
 
@@ -370,7 +362,7 @@ export const RewardsPage: React.FC = () => {
       >
         <Row gutter={16} align="middle">
           <Col flex={1}>
-            <Space direction="vertical" size={4}>
+            <Space direction="vertical" size={2}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <FireOutlined style={{ fontSize: 32 }} />
                 <div>
@@ -381,6 +373,12 @@ export const RewardsPage: React.FC = () => {
                     Earn free gas with every purchase
                   </Text>
                 </div>
+              </div>
+              {/* Show Reward ID */}
+              <div style={{ marginTop: 8, background: 'rgba(255,255,255,0.1)', padding: '4px 12px', borderRadius: 16 }}>
+                 <Text style={{ color: 'white', fontSize: 13 }}>
+                   Your Reward ID: <Text strong style={{ color: '#fff' }}>{localStorage.getItem('bigcompany_user') ? JSON.parse(localStorage.getItem('bigcompany_user')!).phone : '...'}</Text>
+                 </Text>
               </div>
             </Space>
           </Col>

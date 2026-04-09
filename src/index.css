@@ -767,24 +767,44 @@ body {
 .chart-container-mobile > div {
   min-width: 300px;
 }
+/* Robust Modern POS Receipt Printing */
 @media print {
-  body * {
-    visibility: hidden;
+  /* Hide the root app and all its siblings */
+  #root, .ant-modal-mask, .ant-modal-wrap, .ant-modal-root {
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
   }
-  .ant-modal-content, .ant-modal-content * {
-    visibility: visible;
+
+  /* Force only the modern-receipt-print to be visible */
+  .modern-receipt-print {
+    visibility: visible !important;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 80mm !important; /* Standard receipt width */
+    margin: 0 !important;
+    padding: 10mm !important;
+    background: white !important;
+    display: block !important;
+    z-index: 99999 !important;
+    font-family: 'Inter', system-ui, sans-serif !important;
   }
-  .ant-modal-content {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+
+  .modern-receipt-print * {
+    visibility: visible !important;
+  }
+
+  /* Reset body background for print */
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Disable margins/headers/footers in browser print settings if possible */
+  @page {
     margin: 0;
-    padding: 0;
-    box-shadow: none !important;
-    border: none !important;
-  }
-  .ant-modal-footer, .ant-modal-close {
-    display: none !important;
+    size: auto;
   }
 }

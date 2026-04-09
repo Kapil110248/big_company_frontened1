@@ -94,6 +94,7 @@ export const WalletCreditPage: React.FC = () => {
   const [rejectModal, setRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [historyData, setHistoryData] = useState<any[]>([]);
 
   useEffect(() => {
     fetchWalletData();
@@ -102,10 +103,11 @@ export const WalletCreditPage: React.FC = () => {
   const fetchWalletData = async () => {
     setLoading(true);
     try {
-      const [statsResponse, ordersResponse, creditResponse] = await Promise.all([
+      const [statsResponse, ordersResponse, creditResponse, historyResponse] = await Promise.all([
         wholesalerApi.getInventoryStats(),
         wholesalerApi.getSupplierOrders ? wholesalerApi.getSupplierOrders() : Promise.resolve({ data: { orders: [] } }),
         wholesalerApi.getCreditRequests(),
+        wholesalerApi.getWholesalerHistory ? wholesalerApi.getWholesalerHistory() : Promise.resolve({ data: { history: [] } }),
       ]);
 
       // Calculate wallet values from inventory stats
@@ -122,6 +124,7 @@ export const WalletCreditPage: React.FC = () => {
         pendingSupplierPayments: ordersResponse.data?.pendingAmount || 0,
       });
 
+      setHistoryData(historyResponse.data?.history || []);
       setSupplierOrders(ordersResponse.data?.orders || []);
       setCreditRequests(creditResponse.data?.requests || []);
     } catch (error) {
@@ -181,29 +184,6 @@ export const WalletCreditPage: React.FC = () => {
   const supplierOrderColumns = [
     {
       title: 'Supplier',
-      dataIndex: 'supplier_name',
-      key: 'supplier_name',
-      render: (name: string) => <Text strong>{name}</Text>,
-    },
-    {
-      title: 'Invoice #',
-      dataIndex: 'invoice_number',
-      key: 'invoice_number',
-      render: (v: string) => <Tag color="blue">{v}</Tag>,
-    },
-    {
-      title: 'Items',
-      dataIndex: 'items_count',
-      key: 'items_count',
-    },
-    {
-      title: 'Amount',
-      dataIndex: 'total_amount',
-      key: 'total_amount',
-      render: (v: number) => <Text strong>{formatCurrency(v)}</Text>,
-    },
-    {
-      title: 'Supplier',
       dataIndex: 'supplierName',
       key: 'supplierName',
       render: (name: string) => <Text strong>{name}</Text>,
@@ -218,6 +198,7 @@ export const WalletCreditPage: React.FC = () => {
       title: 'Items',
       dataIndex: 'itemsCount',
       key: 'itemsCount',
+      render: (v: any) => v || '-',
     },
     {
       title: 'Amount',
@@ -231,7 +212,7 @@ export const WalletCreditPage: React.FC = () => {
       key: 'paymentStatus',
       render: (status: string) => {
         const colors: Record<string, string> = { completed: 'green', paid: 'green', pending: 'orange', partial: 'blue' };
-        return <Tag color={colors[status]}>{(status || 'pending').toUpperCase()}</Tag>;
+        return <Tag color={colors[status] || 'default'}>{(status || 'pending').toUpperCase()}</Tag>;
       },
     },
     {
@@ -240,12 +221,53 @@ export const WalletCreditPage: React.FC = () => {
       key: 'createdAt',
       render: (v: string) => formatDate(v),
     },
+  ];
+
+  const historyColumns = [
     {
-      title: 'Paid Date',
-      dataIndex: 'paidAt',
-      key: 'paidAt',
-      render: (v: string) => v ? formatDate(v) : <Text type="secondary">-</Text>,
+      title: 'Type',
+      dataIndex: 'title',
+      key: 'title',
+      render: (text: string, record: any) => (
+        <Space>
+          {record.type === 'supplier_payment' ? <ShoppingCartOutlined style={{ color: '#fa8c16' }} /> : <CheckCircleOutlined style={{ color: '#52c41a' }} />}
+          <Text strong>{text}</Text>
+        </Space>
+      )
     },
+    {
+      title: 'Party',
+      dataIndex: 'party',
+      key: 'party',
+    },
+    {
+      title: 'Reference',
+      dataIndex: 'reference',
+      key: 'reference',
+      render: (v: string) => <Tag>{v}</Tag>,
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (v: number, record: any) => (
+        <Text strong style={{ color: record.type === 'supplier_payment' ? '#ff4d4f' : '#52c41a' }}>
+          {record.type === 'supplier_payment' ? '-' : '+'}{formatCurrency(v)}
+        </Text>
+      ),
+    },
+    {
+      title: 'Date',
+      dataIndex: 'date',
+      key: 'date',
+      render: (v: string) => formatDate(v),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => <Tag color="green">{(status || 'COMPLETED').toUpperCase()}</Tag>
+    }
   ];
 
   const creditRequestColumns = [
@@ -412,9 +434,28 @@ export const WalletCreditPage: React.FC = () => {
 
       {/* Tabs for different sections */}
       <Card>
-        <Tabs defaultActiveKey="supplier-orders">
+        <Tabs defaultActiveKey="history">
           <TabPane
-            tab={<span><ShoppingCartOutlined /> Supplier Order History</span>}
+            tab={<span><HistoryOutlined /> Wallet History</span>}
+            key="history"
+          >
+            <Alert
+              message="Unified Wallet History"
+              description="Review all your supplier payments and retailer credit extensions in one place"
+              type="success"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            <Table
+              columns={historyColumns}
+              dataSource={historyData}
+              rowKey="id"
+              loading={loading}
+              pagination={{ pageSize: 10 }}
+            />
+          </TabPane>
+          <TabPane
+            tab={<span><ShoppingCartOutlined /> Supplier Orders</span>}
             key="supplier-orders"
           >
             <Alert

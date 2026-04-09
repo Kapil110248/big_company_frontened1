@@ -565,9 +565,23 @@ export const ShopPage: React.FC = () => {
                   const categoryName = p.categories?.[0]?.name || p.category || 'GENERAL';
                   const q = getItemQuantity(p.id);
 
-                  return (
-                    <Col xs={12} md={8} lg={6} key={p.id}>
-                      <Card className="product-card" cover={<div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}><img src={p.image || p.thumbnail || 'https://via.placeholder.com/200'} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /></div>}>
+                    return (
+                      <Col xs={12} md={8} lg={6} key={p.id}>
+                        <Card 
+                          className="product-card" 
+                          cover={
+                            <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+                              <img 
+                                src={p.image || p.thumbnail || 'https://placehold.co/200x200?text=Product'} 
+                                alt={productName}
+                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://placehold.co/200x200?text=No+Image';
+                                }}
+                              />
+                            </div>
+                          }
+                        >
                         <Text type="secondary" style={{ fontSize: 10, fontWeight: 700 }}>{categoryName}</Text>
                         <Title level={5} style={{ margin: '4px 0 12px', height: 44, overflow: 'hidden' }}>{productName}</Title>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
