@@ -267,7 +267,7 @@ const AccountManagementPage: React.FC = () => {
     });
   };
 
-  const handleToggleStatus = async (id: string, type: 'retailer' | 'wholesaler', currentStatus: string) => {
+  const handleToggleStatus = async (id: string, type: 'retailer' | 'wholesaler' | 'customer', currentStatus: string) => {
     const isActive = currentStatus !== 'active';
     Modal.confirm({
       title: `${isActive ? 'Activate' : 'Deactivate'} Account`,
@@ -277,8 +277,10 @@ const AccountManagementPage: React.FC = () => {
         try {
           if (type === 'retailer') {
             await adminApi.updateRetailerStatus(id, isActive);
-          } else {
+          } else if (type === 'wholesaler') {
             await adminApi.updateWholesalerStatus(id, isActive);
+          } else {
+            await adminApi.updateCustomerStatus(id, { status: isActive ? 'active' : 'inactive' });
           }
           message.success(`Account ${isActive ? 'activated' : 'deactivated'} successfully`);
           loadAccounts();
@@ -289,7 +291,25 @@ const AccountManagementPage: React.FC = () => {
     });
   };
 
-  const handleVerifyAccount = async (id: string, type: 'retailer' | 'wholesaler') => {
+  const handleDeleteCustomer = (id: string) => {
+    Modal.confirm({
+      title: 'Delete Customer',
+      content: 'Are you sure you want to delete this customer? This will remove all their data including wallets and orders.',
+      okText: 'Delete',
+      okType: 'danger',
+      onOk: async () => {
+        try {
+          await adminApi.deleteCustomer(id);
+          message.success('Customer deleted successfully');
+          loadAccounts();
+        } catch (error: any) {
+          message.error('Failed to delete customer');
+        }
+      }
+    });
+  };
+
+  const handleVerifyAccount = async (id: string, type: 'retailer' | 'wholesaler' | 'customer') => {
     Modal.confirm({
       title: 'Verify Account',
       content: `Are you sure you want to verify this ${type} account?`,
@@ -298,8 +318,11 @@ const AccountManagementPage: React.FC = () => {
         try {
           if (type === 'retailer') {
             await adminApi.verifyRetailer(id);
-          } else {
+          } else if (type === 'wholesaler') {
             await adminApi.verifyWholesaler(id);
+          } else {
+            message.info('Customer verification is handled via profile details.');
+            return;
           }
           message.success('Account verified successfully');
           loadAccounts();
@@ -546,7 +569,16 @@ const AccountManagementPage: React.FC = () => {
             className="text-purple-600"
             onClick={() => navigate(`/admin/account-details/${record.id}?type=customer`)}
           >
-            View Account
+            View
+          </Button>
+          <Button type="link" danger size="small" onClick={() => handleDeleteCustomer(record.id)}>Delete</Button>
+          <Button
+            type="link"
+            size="small"
+            className={record.status === 'active' ? 'text-red-500' : 'text-green-500'}
+            onClick={() => handleToggleStatus(record.id, 'customer', record.status)}
+          >
+            {record.status === 'active' ? 'Deactivate' : 'Activate'}
           </Button>
         </Space>
       ),

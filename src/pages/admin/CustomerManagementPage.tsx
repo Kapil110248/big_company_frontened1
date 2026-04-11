@@ -116,14 +116,14 @@ const CustomerManagementPage: React.FC = () => {
   const handleToggleStatus = async (record: Customer) => {
     const newStatus = !record.user?.isActive;
     try {
-      // API expects string status in data object
-      await adminApi.updateCustomerStatus(record.user.id.toString(), { 
+      // Pass the ConsumerProfile ID (record.id) for consistency with other management APIs
+      await adminApi.updateCustomerStatus(record.id.toString(), { 
         status: newStatus ? 'active' : 'inactive' 
       });
       message.success(`Customer ${newStatus ? 'activated' : 'deactivated'} successfully`);
       loadCustomers();
     } catch (error: any) {
-      message.error('Failed to update status');
+      message.error(error.response?.data?.error || 'Failed to update status');
     }
   };
 
